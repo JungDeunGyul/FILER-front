@@ -6,7 +6,7 @@ export function FindTeam({ setFindTeamModalOpen }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const textareaRef = useRef(null);
+  const findTeamInputRef = useRef(null);
 
   const { userData } = useUserStore();
 
@@ -24,7 +24,7 @@ export function FindTeam({ setFindTeamModalOpen }) {
     event.preventDefault();
 
     try {
-      const teamName = textareaRef.current.value;
+      const teamName = findTeamInputRef.current.value;
 
       if (
         teamName.length < 3 ||
@@ -68,7 +68,7 @@ export function FindTeam({ setFindTeamModalOpen }) {
             찾는 팀 이름을 입력해주세요
           </label>
           <input
-            ref={textareaRef}
+            ref={findTeamInputRef}
             onChange={handleChange}
             className="border rounded-md p-3 mb-4 w-full"
           />
