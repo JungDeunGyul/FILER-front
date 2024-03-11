@@ -1,9 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Home from "../components/Home";
-import ExploreTeam from "../components/ExploreTeam";
-import MyTeam from "../components/MyTeam";
-import Login from "../components/Login";
+import Header from "./Header";
+import Home from "./Home";
+import ExploreTeam from "./ExploreTeam";
+import MyTeam from "./MyTeam";
+import Login from "./Login";
 import useUserStore from "./store/userData";
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
   return (
     <div>
       <div className="w-full h-full">
+        {userData && <Header className="fixed top-0 left-0" />}
         <Routes>
           <Route
             path="/"
