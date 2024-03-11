@@ -54,6 +54,9 @@ export function FindTeam({ setFindTeamModalOpen }) {
       if (error.response.status === 404) {
         setErrorMessage(error.response.data.message);
         return;
+      } else if (error.response.status === 412) {
+        setErrorMessage(error.response.data.message);
+        return;
       }
 
       console.error("Error submitting form:", error);
