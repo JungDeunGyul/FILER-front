@@ -1,5 +1,13 @@
+import useUserStore from "../store/userData";
+import ExploreTeam from "../ExploreTeam";
+import MyTeam from "../MyTeam";
+
 function Home() {
-  return <div>Home components</div>;
+  const { userData } = useUserStore();
+
+  return (
+    <div>{userData.teams.length === 0 ? <ExploreTeam /> : <MyTeam />}</div>
+  );
 }
 
 export default Home;
