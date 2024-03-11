@@ -10,7 +10,7 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
   const createTeamInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const { userData } = useUserStore();
+  const { userData, setUserData } = useUserStore();
 
   const handleCloseModals = () => {
     setCreateTeamModalOpen(false);
@@ -50,6 +50,7 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
         setTimeout(() => {
           setSuccessMessage("");
           setCreateTeamModalOpen(false);
+          setUserData(response.data.updatedUser);
           navigate("/myteam");
         }, 3000);
       }
