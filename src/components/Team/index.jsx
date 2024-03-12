@@ -11,12 +11,24 @@ function Team() {
 
   const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
   const [currentTeam, setCurrentTeam] = useState(null);
+  const [filterValue, setFilterValue] = useState("");
 
   useEffect(() => {
     const team = userData.teams.find((team) => team.name === teamName);
     setCurrentTeam(team);
   }, [userData.teams, teamName]);
 
+  const filteredFolders = currentTeam
+    ? currentTeam.ownedFolders.filter((folder) =>
+        folder.name.toLowerCase().includes(filterValue.toLowerCase()),
+      )
+    : [];
+
+  const filteredFiles = currentTeam
+    ? currentTeam.ownedFiles.filter((file) =>
+        file.name.toLowerCase().includes(filterValue.toLowerCase()),
+      )
+    : [];
   const handleFolderClick = (folderName) => {
     navigate(
       `/team/${encodeURIComponent(teamName)}/folder/${encodeURIComponent(
@@ -87,9 +99,18 @@ function Team() {
         </div>
 
         <div className="flex-grow border-2 border-gray-200 m-5">
+          <div className="flex justify-end mr-5">
+            <input
+              type="text"
+              placeholder="폴더 / 파일 명을 입력하세요"
+              value={filterValue}
+              onChange={(e) => setFilterValue(e.target.value)}
+              className="p-2 mt-4 ml-5 border"
+            />
+          </div>
           <p>폴 더</p>
           <div className="grid grid-cols-4 gap-6 m-2 p-2">
-            {currentTeam.ownedFolders.map((folder) => (
+            {filteredFolders.map((folder) => (
               <div
                 key={folder._id}
                 style={{ cursor: "pointer" }}
@@ -106,7 +127,7 @@ function Team() {
           </div>
           <p>파 일</p>
           <div className="grid grid-cols-4 gap-6 m-2 p-2">
-            {currentTeam.ownedFiles.map((file) => (
+            {filteredFiles.map((file) => (
               <div
                 key={file._id}
                 style={{ cursor: "pointer" }}
