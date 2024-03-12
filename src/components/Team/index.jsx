@@ -7,7 +7,7 @@ import { LeaveTeam } from "../Modal/LeaveTeam";
 
 function Team() {
   const { userData } = useUserStore();
-  const { teamName } = useParams();
+  const { teamId } = useParams();
   const navigate = useNavigate();
 
   const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
@@ -16,11 +16,12 @@ function Team() {
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
 
   useEffect(() => {
-    const team = userData.teams.find((team) => team.name === teamName);
+    const team = userData.teams.find((team) => team._id === teamId);
+
     if (team !== currentTeam) {
       setCurrentTeam(team);
     }
-  }, [userData.teams, teamName, currentTeam]);
+  }, [userData.teams, teamId, currentTeam]);
 
   const filteredFolders = currentTeam
     ? currentTeam.ownedFolders.filter((folder) =>
@@ -34,11 +35,11 @@ function Team() {
       )
     : [];
 
-  const handleFolderClick = (folderName) => {
+  const handleFolderClick = (folderId) => {
     navigate(
-      `/team/${encodeURIComponent(teamName)}/folder/${encodeURIComponent(
-        folderName,
-      )}`,
+      `/team/${encodeURIComponent(
+        currentTeam.name,
+      )}/folder/${encodeURIComponent(folderId)}`,
     );
   };
 
@@ -130,7 +131,7 @@ function Team() {
                 key={folder._id}
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                  handleFolderClick(folder.name);
+                  handleFolderClick(folder._id);
                 }}
                 className="bg-gray-300 p-7 m-1 border relative"
               >
