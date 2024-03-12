@@ -5,6 +5,8 @@ import Home from "./Home";
 import ExploreTeam from "./ExploreTeam";
 import MyTeam from "./MyTeam";
 import Login from "./Login";
+import Team from "./Team";
+
 import useUserStore from "./store/userData";
 
 function App() {
@@ -30,6 +32,10 @@ function App() {
           <Route
             path="/myteam"
             element={userData ? <MyTeam /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/team/:teamName"
+            element={userData ? <Team /> : <Navigate to="/" />}
           />
         </Routes>
       </div>
