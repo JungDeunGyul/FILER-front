@@ -34,7 +34,7 @@ function App() {
             element={userData ? <MyTeam /> : <Navigate to="/" />}
           />
           <Route
-            path="/team/:teamName"
+            path="/team/:teamId"
             element={userData ? <Team /> : <Navigate to="/" />}
           />
         </Routes>

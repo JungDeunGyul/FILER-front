@@ -11,8 +11,8 @@ function MyTeam() {
     team.name.toLowerCase().includes(filterValue.toLowerCase()),
   );
 
-  const handleTeamClick = (teamName) => {
-    navigate(`/team/${encodeURIComponent(teamName)}`);
+  const handleTeamClick = (teamId) => {
+    navigate(`/team/${encodeURIComponent(teamId)}`);
   };
 
   return (
@@ -40,7 +40,7 @@ function MyTeam() {
             {filteredTeams.map((team) => (
               <div
                 key={team._id}
-                onClick={() => handleTeamClick(team.name)}
+                onClick={() => handleTeamClick(team._id)}
                 style={{ cursor: "pointer" }}
                 className="p-7 m-1 border relative"
               >
