@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import useUserStore from "../store/userData";
 import { CreateFolder } from "../Modal/CreateFolder";
+import { LeaveTeam } from "../Modal/LeaveTeam";
 
 function Team() {
   const { userData } = useUserStore();
@@ -12,6 +13,7 @@ function Team() {
   const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
   const [currentTeam, setCurrentTeam] = useState(null);
   const [filterValue, setFilterValue] = useState("");
+  const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
 
   useEffect(() => {
     const team = userData.teams.find((team) => team.name === teamName);
@@ -44,6 +46,10 @@ function Team() {
     setCreateFolderModalOpen(true);
   };
 
+  const handleLeaveTeamClick = () => {
+    setLeaveTeamModalOpen(true);
+  };
+
   if (!currentTeam) {
     return (
       <div className="relative flex items-center justify-center h-screen w-full">
@@ -56,7 +62,13 @@ function Team() {
     <div className="flex h-screen w-full">
       <div className="flex flex-col items-start w-48 space-y-5 border-t-2 border-r-2 border-gray-300">
         <div className="flex justify-between w-48 mt-2">
-          <div className="text-2xl font-bold">{currentTeam.name}</div>
+          <div
+            onClick={() => handleLeaveTeamClick(true)}
+            style={{ cursor: "pointer" }}
+            className="text-2xl font-bold"
+          >
+            {currentTeam.name}
+          </div>
           {currentTeam.members.slice(0, 3).map((user) => (
             <img
               key={user._id}
@@ -152,6 +164,12 @@ function Team() {
             teamName={teamName}
           />
         </div>
+      )}
+      {isLeaveTeamModalOpen && (
+        <LeaveTeam
+          setLeaveTeamModalOpen={setLeaveTeamModalOpen}
+          currentTeam={currentTeam}
+        />
       )}
     </div>
   );
