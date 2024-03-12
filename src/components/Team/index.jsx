@@ -15,8 +15,10 @@ function Team() {
 
   useEffect(() => {
     const team = userData.teams.find((team) => team.name === teamName);
-    setCurrentTeam(team);
-  }, [userData.teams, teamName]);
+    if (team !== currentTeam) {
+      setCurrentTeam(team);
+    }
+  }, [userData.teams, teamName, currentTeam]);
 
   const filteredFolders = currentTeam
     ? currentTeam.ownedFolders.filter((folder) =>
@@ -29,6 +31,7 @@ function Team() {
         file.name.toLowerCase().includes(filterValue.toLowerCase()),
       )
     : [];
+
   const handleFolderClick = (folderName) => {
     navigate(
       `/team/${encodeURIComponent(teamName)}/folder/${encodeURIComponent(
