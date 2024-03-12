@@ -37,9 +37,9 @@ function Team() {
 
   const handleFolderClick = (folderId) => {
     navigate(
-      `/team/${encodeURIComponent(
-        currentTeam.name,
-      )}/folder/${encodeURIComponent(folderId)}`,
+      `/team/${encodeURIComponent(currentTeam._id)}/folder/${encodeURIComponent(
+        folderId,
+      )}`,
     );
   };
 
@@ -88,7 +88,7 @@ function Team() {
           currentTeam.ownedFolders.map((folder) => (
             <div
               key={folder._id}
-              onClick={() => handleFolderClick(folder.name)}
+              onClick={() => handleFolderClick(folder._id)}
               style={{ cursor: "pointer" }}
             >
               <p className="text-lg font-bold">📁 {folder.name}</p>
@@ -162,7 +162,7 @@ function Team() {
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
           <CreateFolder
             setCreateFolderModalOpen={setCreateFolderModalOpen}
-            teamName={teamName}
+            teamName={currentTeam}
           />
         </div>
       )}
