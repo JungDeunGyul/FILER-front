@@ -11,6 +11,10 @@ function MyTeam() {
     team.name.toLowerCase().includes(filterValue.toLowerCase()),
   );
 
+  const handleTeamClick = (teamName) => {
+    navigate(`/team/${encodeURIComponent(teamName)}`);
+  };
+
   return (
     <div className="relative flex items-center justify-center h-screen w-full">
       <div className="w-4/6 h-5/6">
@@ -34,7 +38,12 @@ function MyTeam() {
           </div>
           <div className="grid grid-cols-4 gap-6 m-2 p-2">
             {filteredTeams.map((team) => (
-              <div key={team._id} className="p-7 m-1 border relative">
+              <div
+                key={team._id}
+                onClick={() => handleTeamClick(team.name)}
+                style={{ cursor: "pointer" }}
+                className="p-7 m-1 border relative"
+              >
                 <p className="text-lg font-bold absolute top-1 left-2">
                   {team.name}
                 </p>
