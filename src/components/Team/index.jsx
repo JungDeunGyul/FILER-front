@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import useUserStore from "../store/userData";
 import { CreateFolder } from "../Modal/CreateFolder";
 import { LeaveTeam } from "../Modal/LeaveTeam";
+import { FileDetail } from "../Modal/FileDetail";
+
+import { getFileIconUrl } from "../../utils/fileIconURL";
+import { handleDownloadFile } from "../../utils/downloadFile";
+
+import DropZone from "../DropZone";
+import useUserStore from "../store/userData";
 
 function Team() {
   const { userData } = useUserStore();
@@ -11,9 +17,12 @@ function Team() {
   const navigate = useNavigate();
 
   const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
+  const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
+  const [isFileDetailOpen, setFileDetailOpen] = useState(false);
+
   const [currentTeam, setCurrentTeam] = useState(null);
   const [filterValue, setFilterValue] = useState("");
-  const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     const team = userData.teams.find((team) => team._id === teamId);
@@ -41,6 +50,19 @@ function Team() {
         folderId,
       )}`,
     );
+  };
+
+  const handleFileClick = (fileId) => {
+    setSelectedFile(fileId);
+  };
+
+  const handleViewDetails = (filePath) => {
+    setSelectedFile(filePath);
+    setFileDetailOpen(true);
+  };
+
+  const handleCancel = () => {
+    setSelectedFile(null);
   };
 
   const handleCreateFolderClick = () => {
@@ -115,6 +137,7 @@ function Team() {
         </div>
 
         <div className="flex-grow border-2 border-gray-200 m-5">
+          <DropZone teamId={currentTeam._id} userId={userData._id} />
           <div className="flex justify-end mr-5">
             <input
               type="text"
@@ -146,12 +169,48 @@ function Team() {
             {filteredFiles.map((file) => (
               <div
                 key={file._id}
-                style={{ cursor: "pointer" }}
-                className="bg-gray-300 p-7 m-1 border relative"
+                className="bg-gray-300 p-7 m-1 border relative flex flex-col"
               >
-                <p className="text-lg font-bold absolute top-1 left-2">
-                  📁 {file.name}
-                </p>
+                <div
+                  onClick={() => handleFileClick(file._id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <img
+                    src={getFileIconUrl(file.type)}
+                    alt={file.type}
+                    className="absolute top-1 left-2"
+                    style={{ width: "20px", height: "20px" }}
+                  />
+                  <p className="text-lg font-bold absolute">
+                    {file.name.length > 20
+                      ? `${file.name.substring(0, 15)}...`
+                      : file.name}
+                  </p>
+                </div>
+                {selectedFile === file._id && (
+                  <div className="file-options mt-2">
+                    <button
+                      onClick={() =>
+                        handleDownloadFile(teamId, file._id, file.name)
+                      }
+                      className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                    >
+                      다운로드
+                    </button>
+                    <button
+                      onClick={() => handleViewDetails(file.filePath)}
+                      className="bg-green-500 text-white px-3 py-1 rounded mr-2"
+                    >
+                      자세히 보기
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                    >
+                      취소
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -162,7 +221,7 @@ function Team() {
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
           <CreateFolder
             setCreateFolderModalOpen={setCreateFolderModalOpen}
-            teamName={currentTeam}
+            teamName={currentTeam.name}
           />
         </div>
       )}
@@ -170,6 +229,12 @@ function Team() {
         <LeaveTeam
           setLeaveTeamModalOpen={setLeaveTeamModalOpen}
           currentTeam={currentTeam}
+        />
+      )}
+      {isFileDetailOpen && (
+        <FileDetail
+          setFileDetailOpen={setFileDetailOpen}
+          filePath={selectedFile}
         />
       )}
     </div>
