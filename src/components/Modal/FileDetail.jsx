@@ -1,9 +1,11 @@
-import DocViewer from "react-doc-viewer";
+import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
 
-export function FileDetail({ setFileDetailOpen, filePath }) {
+export function FileDetail({ setFileDetailOpen, file }) {
   const docs = [
     {
-      uri: filePath,
+      uri: file.filePath,
+      fileType: file.type,
+      filePath: file.name,
     },
   ];
 
@@ -15,6 +17,7 @@ export function FileDetail({ setFileDetailOpen, filePath }) {
     <div>
       <DocViewer
         documents={docs}
+        prefetchMethod="GET"
         config={{
           header: {
             disableHeader: true,
@@ -22,8 +25,9 @@ export function FileDetail({ setFileDetailOpen, filePath }) {
             retainURLParams: true,
           },
         }}
+        pluginRenderers={DocViewerRenderers}
       />
-      <div onClick={handleModalClick}>hi</div>
+      <div onClick={handleModalClick}>닫기</div>
     </div>
   );
 }
