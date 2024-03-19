@@ -34,6 +34,7 @@ export function FindTeam({ setFindTeamModalOpen }) {
         setErrorMessage(
           "팀 이름은 3자 이상, 10자 이하이며 특수문자를 포함할 수 없습니다.",
         );
+
         return;
       }
 
@@ -41,6 +42,7 @@ export function FindTeam({ setFindTeamModalOpen }) {
         `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/joinrequest/${
           userData._id
         }`,
+        { action: "가입요청" },
       );
 
       if (response.status === 200) {
@@ -48,7 +50,7 @@ export function FindTeam({ setFindTeamModalOpen }) {
         setTimeout(() => {
           setSuccessMessage("");
           setFindTeamModalOpen(false);
-        }, 3000);
+        }, 1000);
       }
     } catch (error) {
       if (error.response.status === 404) {
