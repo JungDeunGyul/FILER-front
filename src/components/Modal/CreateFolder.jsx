@@ -2,7 +2,12 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import useUserStore from "../store/userData";
 
-export function CreateFolder({ setCreateFolderModalOpen, teamName }) {
+export function CreateFolder({
+  setCreateFolderModalOpen,
+  teamName,
+  folderId,
+  setFolder,
+}) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -34,6 +39,22 @@ export function CreateFolder({ setCreateFolderModalOpen, teamName }) {
         setErrorMessage(
           "폴더 이름은 3자 이상, 10자 이하이며 특수문자를 포함할 수 없습니다.",
         );
+        return;
+      }
+
+      if (folderId) {
+        const response = await axios.post(
+          `${import.meta.env.VITE_SERVER_URL}/folder/${folderId}/new`,
+          { folderName, teamName },
+        );
+
+        setSuccessMessage("성공적으로 폴더가 만들어졌습니다!");
+        setTimeout(() => {
+          setSuccessMessage("");
+          setFolder(response.data.folder);
+          setCreateFolderModalOpen(false);
+        }, 3000);
+
         return;
       }
 

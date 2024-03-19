@@ -293,7 +293,9 @@ function Folder() {
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
           <CreateFolder
             setCreateFolderModalOpen={setCreateFolderModalOpen}
-            teamName={currentTeam}
+            teamName={currentTeam.name}
+            folderId={folderId}
+            setFolder={setFolder}
           />
         </div>
       )}
