@@ -13,7 +13,7 @@ export function FileDetail({ setFileDetailOpen, file }) {
   };
 
   return (
-    <div>
+    <div className="fixed w-4/6 h-4/6 z-10 bg-gray flex flex-col items-center justify-center p-4">
       <DocViewer
         documents={docs}
         prefetchMethod="GET"
