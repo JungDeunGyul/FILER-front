@@ -11,8 +11,10 @@ import { handleDownloadFile } from "../../utils/downloadFile";
 import DropZone from "../DropZone";
 import useUserStore from "../store/userData";
 
+import axios from "axios";
+
 function Team() {
-  const { userData } = useUserStore();
+  const { userData, setUserData } = useUserStore();
   const { teamId } = useParams();
   const navigate = useNavigate();
 
@@ -21,6 +23,7 @@ function Team() {
   const [isFileDetailOpen, setFileDetailOpen] = useState(false);
 
   const [currentTeam, setCurrentTeam] = useState(null);
+  const [currentUserRole, setUserRole] = useState("");
   const [filterValue, setFilterValue] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -29,6 +32,15 @@ function Team() {
 
     if (team !== currentTeam) {
       setCurrentTeam(team);
+    }
+
+    if (team && team.members) {
+      const currentUser = team.members.find(
+        (user) => user.user.nickname === userData.nickname,
+      );
+
+      const currentUserRole = currentUser ? currentUser.role : "";
+      setUserRole(currentUserRole);
     }
   }, [userData.teams, teamId, currentTeam]);
 
@@ -56,8 +68,8 @@ function Team() {
     setSelectedFile(fileId);
   };
 
-  const handleViewDetails = (filePath) => {
-    setSelectedFile(filePath);
+  const handleViewDetails = (file) => {
+    setSelectedFile(file);
     setFileDetailOpen(true);
   };
 
@@ -71,6 +83,32 @@ function Team() {
 
   const handleLeaveTeamClick = () => {
     setLeaveTeamModalOpen(true);
+  };
+
+  const handleFileDragStart = (event, fileId) => {
+    event.dataTransfer.setData("fileId", fileId);
+  };
+
+  const handleFolderDrop = async (event, folderId) => {
+    event.preventDefault();
+
+    const fileId = event.dataTransfer.getData("fileId");
+    moveFileToFolder(fileId, folderId);
+  };
+
+  const moveFileToFolder = async (fileId, folderId) => {
+    try {
+      const response = await axios.patch(
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/file/${fileId}/move-to-folder/${folderId}`,
+        { userId: userData._id, currentUserRole },
+      );
+
+      setUserData(response.data.user);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   if (!currentTeam) {
@@ -156,6 +194,8 @@ function Team() {
                 onClick={() => {
                   handleFolderClick(folder._id);
                 }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleFolderDrop(e, folder._id)}
                 className="bg-gray-300 p-7 m-1 border relative"
               >
                 <p className="text-lg font-bold absolute top-1 left-2">
@@ -169,6 +209,8 @@ function Team() {
             {filteredFiles.map((file) => (
               <div
                 key={file._id}
+                draggable="true"
+                onDragStart={(e) => handleFileDragStart(e, file._id)}
                 className="bg-gray-300 p-7 m-1 border relative flex flex-col"
               >
                 <div
@@ -198,7 +240,7 @@ function Team() {
                       다운로드
                     </button>
                     <button
-                      onClick={() => handleViewDetails(file.filePath)}
+                      onClick={() => handleViewDetails(file)}
                       className="bg-green-500 text-white px-3 py-1 rounded mr-2"
                     >
                       자세히 보기
@@ -232,10 +274,7 @@ function Team() {
         />
       )}
       {isFileDetailOpen && (
-        <FileDetail
-          setFileDetailOpen={setFileDetailOpen}
-          filePath={selectedFile}
-        />
+        <FileDetail setFileDetailOpen={setFileDetailOpen} file={selectedFile} />
       )}
     </div>
   );
