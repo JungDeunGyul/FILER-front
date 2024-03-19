@@ -13,13 +13,12 @@ export function LeaveTeam({ setLeaveTeamModalOpen, currentTeam }) {
 
   const currentUserRole = currentUser.role;
   const teamName = currentTeam.name;
-
-  console.log(teamName, currentTeam);
+  const teamId = currentTeam._id;
 
   const handleLeaveTeamConfirm = async () => {
     try {
       const response = await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/withdraw/${
+        `${import.meta.env.VITE_SERVER_URL}/team/${teamId}/withdraw/${
           userData._id
         }`,
         {
@@ -44,8 +43,8 @@ export function LeaveTeam({ setLeaveTeamModalOpen, currentTeam }) {
       <div className="bg-white p-8 rounded flex flex-col items-center">
         <p className="text-lg font-semibold mb-4">
           {currentUserRole === "팀장"
-            ? "팀을 삭제하시겠습니까?"
-            : "팀에서 탈퇴하시겠습니까?"}
+            ? `${teamName}팀을 삭제하시겠습니까?`
+            : `${teamName}팀에서 탈퇴하시겠습니까?`}
         </p>
         <div className="flex space-x-4">
           <button
