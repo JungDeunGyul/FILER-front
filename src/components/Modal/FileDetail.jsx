@@ -5,7 +5,6 @@ export function FileDetail({ setFileDetailOpen, file }) {
     {
       uri: file.filePath,
       fileType: file.type,
-      filePath: file.name,
     },
   ];
 
