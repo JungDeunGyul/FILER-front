@@ -1,3 +1,5 @@
+import useUserStore from "../store/userData";
+
 import axios from "axios";
 
 export function DeleteRestoreFileFolder({
@@ -7,6 +9,8 @@ export function DeleteRestoreFileFolder({
   setTrashBin,
   currentUserRole,
 }) {
+  const { userData, setUserData } = useUserStore();
+
   const handleDeleteButton = async (event) => {
     event.preventDefault();
     try {
@@ -36,10 +40,34 @@ export function DeleteRestoreFileFolder({
     }
   };
 
-  const handleRestoreButton = (event) => {
+  const handleRestoreButton = async (event) => {
     event.preventDefault();
     try {
-      console.log("pre restoreButton");
+      const userId = userData._id;
+      if (selectedType === "folder") {
+        const response = await axios.patch(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/restore/folder/${selectedElementId}`,
+          { currentUserRole, userId },
+        );
+        console.log(response.data.user);
+
+        setTrashBin(response.data.trashBin);
+        setUserData(response.data.user);
+        setDeleteRestoreFileFolderModalOpen(false);
+      } else if (selectedType === "file") {
+        const response = await axios.patch(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/restore/file/${selectedElementId}`,
+          { currentUserRole, userId },
+        );
+
+        setTrashBin(response.data.trashBin);
+        setUserData(response.data.user);
+        setDeleteRestoreFileFolderModalOpen(false);
+      }
     } catch (error) {
       console.error(error);
     }
