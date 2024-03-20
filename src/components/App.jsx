@@ -7,6 +7,7 @@ import MyTeam from "./MyTeam";
 import Login from "./Login";
 import Team from "./Team";
 import Folder from "./Folder";
+import TrashBin from "./TrashBin";
 
 import useUserStore from "./store/userData";
 
@@ -41,6 +42,10 @@ function App() {
           <Route
             path="/team/:teamId/folder/:folderId"
             element={userData ? <Folder /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/team/:teamId/trash"
+            element={userData ? <TrashBin /> : <Navigate to="/" />}
           />
         </Routes>
       </div>
