@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { LeaveTeam } from "../Modal/LeaveTeam";
+import { DeleteRestoreFileFolder } from "../Modal/DeleteRestoreFileFolder";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
 
@@ -15,6 +16,14 @@ function TrashBin() {
   const navigate = useNavigate();
 
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
+  const [
+    isDeleteRestoreFileFolderModalOpen,
+    setDeleteRestoreFileFolderModalOpen,
+  ] = useState(false);
+
+  const [selectedElementId, setSelectedElementId] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [currentUserRole, setUserRole] = useState("");
 
   const [currentTeam, setCurrentTeam] = useState(null);
   const [trashBin, setTrashBin] = useState([]);
@@ -25,6 +34,15 @@ function TrashBin() {
 
     if (team !== currentTeam) {
       setCurrentTeam(team);
+    }
+
+    if (team && team.members) {
+      const currentUser = team.members.find(
+        (user) => user.user.nickname === userData.nickname,
+      );
+
+      const currentUserRole = currentUser ? currentUser.role : "";
+      setUserRole(currentUserRole);
     }
   }, [userData.teams, teamId, currentTeam]);
 
@@ -70,6 +88,12 @@ function TrashBin() {
 
   const handleLeaveTeamClick = () => {
     setLeaveTeamModalOpen(true);
+  };
+
+  const handleDeleteRestoreModalClick = (elementId, type) => {
+    setSelectedElementId(elementId);
+    setSelectedType(type);
+    setDeleteRestoreFileFolderModalOpen(true);
   };
 
   if (!currentTeam) {
@@ -145,6 +169,9 @@ function TrashBin() {
             {filteredFolders.map((folder) => (
               <div
                 key={folder.item._id}
+                onClick={() =>
+                  handleDeleteRestoreModalClick(folder.item._id, "folder")
+                }
                 style={{ cursor: "pointer" }}
                 className="bg-gray-300 p-7 m-1 border relative"
               >
@@ -159,6 +186,9 @@ function TrashBin() {
             {filteredFiles.map((file) => (
               <div
                 key={file.item._id}
+                onClick={() =>
+                  handleDeleteRestoreModalClick(file.item._id, "file")
+                }
                 className="bg-gray-300 p-7 m-1 border relative flex flex-col"
               >
                 <div style={{ cursor: "pointer" }}>
@@ -183,6 +213,17 @@ function TrashBin() {
         <LeaveTeam
           setLeaveTeamModalOpen={setLeaveTeamModalOpen}
           currentTeam={currentTeam}
+        />
+      )}
+      {isDeleteRestoreFileFolderModalOpen && (
+        <DeleteRestoreFileFolder
+          setDeleteRestoreFileFolderModalOpen={
+            setDeleteRestoreFileFolderModalOpen
+          }
+          selectedElementId={selectedElementId}
+          selectedType={selectedType}
+          setTrashBin={setTrashBin}
+          currentUserRole={currentUserRole}
         />
       )}
     </div>
