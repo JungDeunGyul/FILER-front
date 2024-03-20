@@ -71,10 +71,6 @@ function Folder() {
     }
   };
 
-  if (!currentTeam) {
-    return <div>Loading...</div>;
-  }
-
   const filteredFolders =
     folderData && folderData.subFolders
       ? folderData.subFolders.filter((folder) =>
@@ -122,6 +118,10 @@ function Folder() {
     event.dataTransfer.setData("fileId", fileId);
   };
 
+  const handleFolderDragStart = (event, folderId) => {
+    event.dataTransfer.setData("folderId", folderId);
+  };
+
   const handleFolderDrop = async (event, folderId) => {
     event.preventDefault();
 
@@ -143,6 +143,57 @@ function Folder() {
       console.error(error);
     }
   };
+
+  const handleClickTrashBin = () => {
+    navigate(`/team/${encodeURIComponent(currentTeam._id)}/trash`);
+  };
+
+  const moveFileToTrash = async (fileId) => {
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_SERVER_URL}/trash/file/${fileId}/`,
+        { userId: userData._id, currentUserRole },
+      );
+
+      setUserData(response.data.user);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const moveFolderToTrash = async (folderId) => {
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_SERVER_URL}/trash/folder/${folderId}/`,
+        { userId: userData._id, currentUserRole },
+      );
+
+      setUserData(response.data.user);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleTrashDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  const handleTrashDrop = (event) => {
+    event.preventDefault();
+
+    const fileId = event.dataTransfer.getData("fileId");
+    const folderId = event.dataTransfer.getData("folderId");
+
+    if (fileId) {
+      moveFileToTrash(fileId);
+    } else if (folderId) {
+      moveFolderToTrash(folderId);
+    }
+  };
+
+  if (!currentTeam) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex h-screen w-full">
@@ -179,7 +230,13 @@ function Folder() {
               <p className="text-lg font-bold">📁 {folder.name}</p>
             </div>
           ))}
-        <button>🗑️ 휴지통</button>
+        <div
+          onDragOver={handleTrashDragOver}
+          onDrop={handleTrashDrop}
+          style={{ cursor: "pointer" }}
+        >
+          <button onClick={handleClickTrashBin}>🗑️ 휴지통</button>
+        </div>
       </div>
       <div className="flex-grow flex flex-col">
         <div>
@@ -216,76 +273,76 @@ function Folder() {
           </div>
           <p>폴 더</p>
           <div className="grid grid-cols-4 gap-6 m-2 p-2">
-            {filteredFolders &&
-              filteredFolders.map((folder) => (
-                <div
-                  key={folder._id}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    handleFolderClick(folder._id);
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => handleFolderDrop(e, folder._id)}
-                  className="bg-gray-300 p-7 m-1 border relative"
-                >
-                  <p className="text-lg font-bold absolute top-1 left-2">
-                    📁 {folder.name}
-                  </p>
-                </div>
-              ))}
+            {filteredFolders.map((folder) => (
+              <div
+                key={folder._id}
+                onDragStart={(e) => handleFolderDragStart(e, folder._id)}
+                draggable="true"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  handleFolderClick(folder._id);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleFolderDrop(e, folder._id)}
+                className="bg-gray-300 p-7 m-1 border relative"
+              >
+                <p className="text-lg font-bold absolute top-1 left-2">
+                  📁 {folder.name}
+                </p>
+              </div>
+            ))}
           </div>
           <p>파 일</p>
           <div className="grid grid-cols-4 gap-6 m-2 p-2">
-            {filteredFiles &&
-              filteredFiles.map((file) => (
+            {filteredFiles.map((file) => (
+              <div
+                key={file._id}
+                draggable="true"
+                onDragStart={(e) => handleFileDragStart(e, file._id)}
+                className="bg-gray-300 p-7 m-1 border relative flex flex-col"
+              >
                 <div
-                  key={file._id}
-                  draggable="true"
-                  onDragStart={(e) => handleFileDragStart(e, file._id)}
-                  className="bg-gray-300 p-7 m-1 border relative flex flex-col"
+                  onClick={() => handleFileClick(file._id)}
+                  style={{ cursor: "pointer" }}
                 >
-                  <div
-                    onClick={() => handleFileClick(file._id)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <img
-                      src={getFileIconUrl(file.type)}
-                      alt={file.type}
-                      className="absolute top-1 left-2"
-                      style={{ width: "20px", height: "20px" }}
-                    />
-                    <p className="text-lg font-bold absolute">
-                      {file.name.length > 20
-                        ? `${file.name.substring(0, 15)}...`
-                        : file.name}
-                    </p>
-                  </div>
-                  {selectedFile === file._id && (
-                    <div className="file-options mt-2">
-                      <button
-                        onClick={() =>
-                          handleDownloadFile(teamId, file._id, file.name)
-                        }
-                        className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
-                      >
-                        다운로드
-                      </button>
-                      <button
-                        onClick={() => handleViewDetails(file)}
-                        className="bg-green-500 text-white px-3 py-1 rounded mr-2"
-                      >
-                        자세히 보기
-                      </button>
-                      <button
-                        onClick={handleCancel}
-                        className="bg-red-500 text-white px-3 py-1 rounded"
-                      >
-                        취소
-                      </button>
-                    </div>
-                  )}
+                  <img
+                    src={getFileIconUrl(file.type)}
+                    alt={file.type}
+                    className="absolute top-1 left-2"
+                    style={{ width: "20px", height: "20px" }}
+                  />
+                  <p className="text-lg font-bold absolute">
+                    {file.name.length > 20
+                      ? `${file.name.substring(0, 15)}...`
+                      : file.name}
+                  </p>
                 </div>
-              ))}
+                {selectedFile === file._id && (
+                  <div className="file-options mt-2">
+                    <button
+                      onClick={() =>
+                        handleDownloadFile(teamId, file._id, file.name)
+                      }
+                      className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                    >
+                      다운로드
+                    </button>
+                    <button
+                      onClick={() => handleViewDetails(file)}
+                      className="bg-green-500 text-white px-3 py-1 rounded mr-2"
+                    >
+                      자세히 보기
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                    >
+                      취소
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
