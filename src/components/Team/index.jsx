@@ -89,6 +89,10 @@ function Team() {
     event.dataTransfer.setData("fileId", fileId);
   };
 
+  const handleFolderDragStart = (event, folderId) => {
+    event.dataTransfer.setData("folderId", folderId);
+  };
+
   const handleFolderDrop = async (event, folderId) => {
     event.preventDefault();
 
@@ -108,6 +112,53 @@ function Team() {
       setUserData(response.data.user);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleClickTrashBin = () => {
+    navigate(`/team/${encodeURIComponent(currentTeam._id)}/trash`);
+  };
+
+  const moveFileToTrash = async (fileId) => {
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_SERVER_URL}/trash/file/${fileId}/`,
+        { userId: userData._id, currentUserRole },
+      );
+
+      setUserData(response.data.user);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const moveFolderToTrash = async (folderId) => {
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_SERVER_URL}/trash/folder/${folderId}/`,
+        { userId: userData._id, currentUserRole },
+      );
+
+      setUserData(response.data.user);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleTrashDragOver = (event) => {
+    event.preventDefault();
+  };
+
+  const handleTrashDrop = (event) => {
+    event.preventDefault();
+
+    const fileId = event.dataTransfer.getData("fileId");
+    const folderId = event.dataTransfer.getData("folderId");
+
+    if (fileId) {
+      moveFileToTrash(fileId);
+    } else if (folderId) {
+      moveFolderToTrash(folderId);
     }
   };
 
@@ -154,7 +205,15 @@ function Team() {
               <p className="text-lg font-bold">📁 {folder.name}</p>
             </div>
           ))}
-        <button>🗑️ 휴지통</button>
+        <div
+          onDragOver={handleTrashDragOver}
+          onDrop={handleTrashDrop}
+          style={{ cursor: "pointer" }}
+          draggable="true"
+          onDragStart={(e) => handleFileDragStart(e, "trash")}
+        >
+          <button onClick={handleClickTrashBin}>🗑️ 휴지통</button>
+        </div>
       </div>
       <div className="flex-grow flex flex-col">
         <div>
@@ -190,6 +249,8 @@ function Team() {
             {filteredFolders.map((folder) => (
               <div
                 key={folder._id}
+                onDragStart={(e) => handleFolderDragStart(e, folder._id)}
+                draggable="true"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   handleFolderClick(folder._id);
