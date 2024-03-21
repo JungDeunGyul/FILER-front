@@ -27,7 +27,7 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
 
     try {
       const teamName = createTeamInputRef.current.value;
-      console.log(teamName);
+
       if (
         teamName.length < 3 ||
         teamName.length > 10 ||
