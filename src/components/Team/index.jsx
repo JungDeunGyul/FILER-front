@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { CreateFolder } from "../Modal/CreateFolder";
 import { LeaveTeam } from "../Modal/LeaveTeam";
 import { FileDetail } from "../Modal/FileDetail";
+import { PermissionSetting } from "../Modal/PermissionSetting";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
 import { handleDownloadFile } from "../../utils/downloadFile";
@@ -21,11 +22,14 @@ function Team() {
   const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
   const [isFileDetailOpen, setFileDetailOpen] = useState(false);
+  const [isPermissionModalOpen, setPermissionModalOpen] = useState(false);
 
   const [currentTeam, setCurrentTeam] = useState(null);
   const [currentUserRole, setUserRole] = useState("");
   const [filterValue, setFilterValue] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedElementId, setSelectedElementId] = useState("");
+  const [selectedType, setSelectedType] = useState("");
 
   useEffect(() => {
     const team = userData.teams.find((team) => team._id === teamId);
@@ -83,6 +87,12 @@ function Team() {
 
   const handleLeaveTeamClick = () => {
     setLeaveTeamModalOpen(true);
+  };
+
+  const handlePermissionClick = (elementId, type) => {
+    setSelectedElementId(elementId);
+    setSelectedType(type);
+    setPermissionModalOpen(true);
   };
 
   const handleFileDragStart = (event, fileId) => {
@@ -307,6 +317,12 @@ function Team() {
                       자세히 보기
                     </button>
                     <button
+                      onClick={() => handlePermissionClick(file._id, "file")}
+                      className="bg-gray-500 text-white px-3 py-1 rounded mr-2"
+                    >
+                      권한 설정
+                    </button>
+                    <button
                       onClick={handleCancel}
                       className="bg-red-500 text-white px-3 py-1 rounded"
                     >
@@ -336,6 +352,14 @@ function Team() {
       )}
       {isFileDetailOpen && (
         <FileDetail setFileDetailOpen={setFileDetailOpen} file={selectedFile} />
+      )}
+      {isPermissionModalOpen && (
+        <PermissionSetting
+          setPermissionModalOpen={setPermissionModalOpen}
+          selectedElementId={selectedElementId}
+          selectedType={selectedType}
+          currentUserRole={currentUserRole}
+        />
       )}
     </div>
   );
