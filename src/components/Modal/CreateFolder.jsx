@@ -53,7 +53,7 @@ export function CreateFolder({
           setSuccessMessage("");
           setFolder(response.data.folder);
           setCreateFolderModalOpen(false);
-        }, 3000);
+        }, 2000);
 
         return;
       }
@@ -71,14 +71,22 @@ export function CreateFolder({
           setSuccessMessage("");
           setUserData(response.data.updatedUser);
           setCreateFolderModalOpen(false);
-        }, 3000);
+        }, 2000);
       }
     } catch (error) {
       if (error.response.status === 404) {
         setErrorMessage(error.response.data.message);
+        setTimeout(() => {
+          setErrorMessage("");
+          setCreateFolderModalOpen(false);
+        }, 2000);
         return;
       } else if (error.response.status === 412) {
         setErrorMessage(error.response.data.message);
+        setTimeout(() => {
+          setErrorMessage("");
+          setCreateFolderModalOpen(false);
+        }, 2000);
         return;
       }
 
