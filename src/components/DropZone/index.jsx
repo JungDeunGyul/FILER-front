@@ -6,27 +6,12 @@ import axios from "axios";
 const DropZone = ({ teamId, userId, folderId, setFolder }) => {
   const { setUserData } = useUserStore();
   const [files, setFiles] = useState([]);
-  const [renamingFile, setRenamingFile] = useState(null);
 
   const onDrop = useCallback((acceptedFiles) => {
     setFiles(acceptedFiles);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-
-  const handleRename = (index, newName) => {
-    setFiles((prevFiles) => {
-      const updatedFiles = [...prevFiles];
-      updatedFiles[index] = {
-        ...updatedFiles[index],
-        name: newName,
-      };
-
-      return updatedFiles;
-    });
-
-    setRenamingFile(null);
-  };
 
   const handleUpload = async () => {
     try {
@@ -88,36 +73,11 @@ const DropZone = ({ teamId, userId, folderId, setFolder }) => {
 
       {files.length > 0 && (
         <div>
-          <h4>현재 파일:</h4>
           <ul>
             {files.map((file, index) => (
               <li key={index}>
-                {renamingFile === index ? (
-                  <div>
-                    <input
-                      type="text"
-                      value={file.name}
-                      onChange={(e) => {
-                        const updatedFiles = [...files];
-                        updatedFiles[index] = {
-                          ...file,
-                          name: e.target.value,
-                        };
-                        setFiles(updatedFiles);
-                      }}
-                    />
-                    <button onClick={() => handleRename(index, file.name)}>
-                      업로드하기
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <span>{file.name}</span>
-                    <button onClick={() => setRenamingFile(index)}>
-                      이름 변경
-                    </button>
-                  </div>
-                )}
+                <h4>현재 파일:</h4>
+                <span>{file.name}</span>
               </li>
             ))}
           </ul>
