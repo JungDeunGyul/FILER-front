@@ -13,7 +13,9 @@ export function PermissionSetting({
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handlePermissionSettingButton = async (selectedRole) => {
+  const handlePermissionSettingButton = async (event, selectedRole) => {
+    event.preventDefault();
+
     if (currentUserRole !== "팀장") {
       setErrorMessage("팀장 이외에는 권한 설정 권한이 없습니다.");
       setTimeout(() => {
@@ -73,19 +75,19 @@ export function PermissionSetting({
     <div className="fixed w-4/6 h-4/6 z-10 bg-gray flex flex-col items-center justify-center p-4">
       <div className="flex flex-col w-50 rounded-md items-center bg-white p-6">
         <button
-          onClick={() => handlePermissionSettingButton("팀장")}
+          onClick={(event) => handlePermissionSettingButton(event, "팀장")}
           className="rounded-full bg-slate-900 text-white px-4 py-2"
         >
           팀장
         </button>
         <button
-          onClick={() => handlePermissionSettingButton("팀원")}
+          onClick={(event) => handlePermissionSettingButton(event, "팀원")}
           className="rounded-md bg-gray-300 text-gray-800 px-3 py-1 mt-2"
         >
           팀원
         </button>
         <button
-          onClick={() => handlePermissionSettingButton("수습")}
+          onClick={(event) => handlePermissionSettingButton(event, "수습")}
           className="rounded-md bg-gray-300 text-gray-800 px-3 py-1 mt-2"
         >
           수습
