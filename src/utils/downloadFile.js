@@ -1,9 +1,16 @@
 import axios from "axios";
 
-export const handleDownloadFile = async (teamId, fileId, fileName) => {
+export const handleDownloadFile = async (
+  teamId,
+  fileId,
+  fileName,
+  currentUserRole,
+) => {
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_SERVER_URL}/team/${teamId}/file/${fileId}`,
+      `${
+        import.meta.env.VITE_SERVER_URL
+      }/team/${teamId}/file/${fileId}?currentUserRole=${currentUserRole}`,
       { responseType: "blob" },
     );
 

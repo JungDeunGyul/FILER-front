@@ -5,6 +5,7 @@ import { CreateFolder } from "../Modal/CreateFolder";
 import { LeaveTeam } from "../Modal/LeaveTeam";
 import { FileDetail } from "../Modal/FileDetail";
 import { PermissionSetting } from "../Modal/PermissionSetting";
+import { FolderAccess } from "../Modal/FolderAccess";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
 import { handleDownloadFile } from "../../utils/downloadFile";
@@ -23,6 +24,7 @@ function Folder() {
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
   const [isFileDetailOpen, setFileDetailOpen] = useState(false);
   const [isPermissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [isFolderAccessModalOpen, setFolderAccessModalOpen] = useState(false);
 
   const [folderData, setFolder] = useState([]);
   const [currentUserRole, setUserRole] = useState("");
@@ -89,7 +91,19 @@ function Folder() {
         )
       : [];
 
-  const handleFolderClick = (folderId) => {
+  const handleFolderClick = (folderId, folderVisibleTo) => {
+    if (
+      folderVisibleTo !== "수습" &&
+      currentUserRole !== "팀장" &&
+      folderVisibleTo !== currentUserRole
+    ) {
+      setFolderAccessModalOpen(true);
+      setTimeout(() => {
+        setFolderAccessModalOpen(false);
+      }, 2000);
+      return;
+    }
+
     navigate(
       `/team/${encodeURIComponent(currentTeam._id)}/folder/${encodeURIComponent(
         folderId,
@@ -102,7 +116,15 @@ function Folder() {
   };
 
   const handleViewDetails = (file) => {
-    setSelectedFile(file);
+    if (
+      file.visibleTo !== "수습" &&
+      currentUserRole !== "팀장" &&
+      file.visibleTo !== currentUserRole
+    ) {
+      setSelectedFile(null);
+    } else {
+      setSelectedFile(file);
+    }
     setFileDetailOpen(true);
   };
 
@@ -234,7 +256,7 @@ function Folder() {
           folderData.subFolders.map((folder) => (
             <div
               key={folder._id}
-              onClick={() => handleFolderClick(folder._id)}
+              onClick={() => handlePermissionClick(folder._id, "folder")}
               style={{ cursor: "pointer" }}
             >
               <p className="text-lg font-bold">📁 {folder.name}</p>
@@ -290,7 +312,7 @@ function Folder() {
                 draggable="true"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                  handleFolderClick(folder._id);
+                  handleFolderClick(folder._id, folder.visibleTo);
                 }}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleFolderDrop(e, folder._id)}
@@ -331,7 +353,12 @@ function Folder() {
                   <div className="file-options mt-2">
                     <button
                       onClick={() =>
-                        handleDownloadFile(teamId, file._id, file.name)
+                        handleDownloadFile(
+                          teamId,
+                          file._id,
+                          file.name,
+                          currentUserRole,
+                        )
                       }
                       className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
                     >
@@ -388,6 +415,9 @@ function Folder() {
           selectedType={selectedType}
           currentUserRole={currentUserRole}
         />
+      )}
+      {isFolderAccessModalOpen && (
+        <FolderAccess setFolderAccessModalOpen={setFolderAccessModalOpen} />
       )}
     </div>
   );

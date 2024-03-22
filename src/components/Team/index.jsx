@@ -5,6 +5,7 @@ import { CreateFolder } from "../Modal/CreateFolder";
 import { LeaveTeam } from "../Modal/LeaveTeam";
 import { FileDetail } from "../Modal/FileDetail";
 import { PermissionSetting } from "../Modal/PermissionSetting";
+import { FolderAccess } from "../Modal/FolderAccess";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
 import { handleDownloadFile } from "../../utils/downloadFile";
@@ -23,6 +24,7 @@ function Team() {
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
   const [isFileDetailOpen, setFileDetailOpen] = useState(false);
   const [isPermissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [isFolderAccessModalOpen, setFolderAccessModalOpen] = useState(false);
 
   const [currentTeam, setCurrentTeam] = useState(null);
   const [currentUserRole, setUserRole] = useState("");
@@ -60,7 +62,19 @@ function Team() {
       )
     : [];
 
-  const handleFolderClick = (folderId) => {
+  const handleFolderClick = (folderId, folderVisibleTo) => {
+    if (
+      folderVisibleTo !== "수습" &&
+      currentUserRole !== "팀장" &&
+      folderVisibleTo !== currentUserRole
+    ) {
+      setFolderAccessModalOpen(true);
+      setTimeout(() => {
+        setFolderAccessModalOpen(false);
+      }, 2000);
+      return;
+    }
+
     navigate(
       `/team/${encodeURIComponent(currentTeam._id)}/folder/${encodeURIComponent(
         folderId,
@@ -73,7 +87,15 @@ function Team() {
   };
 
   const handleViewDetails = (file) => {
-    setSelectedFile(file);
+    if (
+      file.visibleTo !== "수습" &&
+      currentUserRole !== "팀장" &&
+      file.visibleTo !== currentUserRole
+    ) {
+      setSelectedFile(null);
+    } else {
+      setSelectedFile(file);
+    }
     setFileDetailOpen(true);
   };
 
@@ -209,7 +231,7 @@ function Team() {
           currentTeam.ownedFolders.map((folder) => (
             <div
               key={folder._id}
-              onClick={() => handleFolderClick(folder._id)}
+              onClick={() => handlePermissionClick(folder._id, "folder")}
               style={{ cursor: "pointer" }}
             >
               <p className="text-lg font-bold">📁 {folder.name}</p>
@@ -250,7 +272,7 @@ function Team() {
               type="text"
               placeholder="폴더 / 파일 명을 입력하세요"
               value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
+              onChange={(event) => setFilterValue(event.target.value)}
               className="p-2 mt-4 ml-5 border"
             />
           </div>
@@ -259,14 +281,16 @@ function Team() {
             {filteredFolders.map((folder) => (
               <div
                 key={folder._id}
-                onDragStart={(e) => handleFolderDragStart(e, folder._id)}
+                onDragStart={(event) =>
+                  handleFolderDragStart(event, folder._id)
+                }
                 draggable="true"
                 style={{ cursor: "pointer" }}
                 onClick={() => {
-                  handleFolderClick(folder._id);
+                  handleFolderClick(folder._id, folder.visibleTo);
                 }}
                 onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleFolderDrop(e, folder._id)}
+                onDrop={(event) => handleFolderDrop(event, folder._id)}
                 className="bg-gray-300 p-7 m-1 border relative"
               >
                 <p className="text-lg font-bold absolute top-1 left-2">
@@ -304,7 +328,12 @@ function Team() {
                   <div className="file-options mt-2">
                     <button
                       onClick={() =>
-                        handleDownloadFile(teamId, file._id, file.name)
+                        handleDownloadFile(
+                          teamId,
+                          file._id,
+                          file.name,
+                          currentUserRole,
+                        )
                       }
                       className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
                     >
@@ -360,6 +389,9 @@ function Team() {
           selectedType={selectedType}
           currentUserRole={currentUserRole}
         />
+      )}
+      {isFolderAccessModalOpen && (
+        <FolderAccess setFolderAccessModalOpen={setFolderAccessModalOpen} />
       )}
     </div>
   );
