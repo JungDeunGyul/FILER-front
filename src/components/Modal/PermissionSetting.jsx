@@ -18,9 +18,10 @@ export function PermissionSetting({
 
     if (currentUserRole !== "팀장") {
       setErrorMessage("팀장 이외에는 권한 설정 권한이 없습니다.");
-      setTimeout(() => {
+      return setTimeout(() => {
         setErrorMessage("");
-      }, 1000);
+        setPermissionModalOpen(false);
+      }, 2000);
     }
 
     const userId = userData._id;
@@ -41,10 +42,13 @@ export function PermissionSetting({
             setPermissionModalOpen(false);
             setUserData(response.data.user);
           }, 2000);
+        } else {
+          setErrorMessage(response.data.message);
+          setTimeout(() => {
+            setErrorMessage("");
+            setPermissionModalOpen(false);
+          }, 2000);
         }
-
-        setUserData(response.data.user);
-        setPermissionModalOpen(false);
       } else if (selectedType === "file") {
         const response = await axios.patch(
           `${
@@ -59,6 +63,12 @@ export function PermissionSetting({
             setSuccessMessage("");
             setPermissionModalOpen(false);
             setUserData(response.data.user);
+          }, 2000);
+        } else {
+          setErrorMessage(response.data.message);
+          setTimeout(() => {
+            setErrorMessage("");
+            setPermissionModalOpen(false);
           }, 2000);
         }
       }
@@ -76,7 +86,7 @@ export function PermissionSetting({
       <div className="flex flex-col w-50 rounded-md items-center bg-white p-6">
         <button
           onClick={(event) => handlePermissionSettingButton(event, "팀장")}
-          className="rounded-full bg-slate-900 text-white px-4 py-2"
+          className="rounded-md bg-gray-300 text-gray-800 px-3 py-1 mt-2"
         >
           팀장
         </button>
