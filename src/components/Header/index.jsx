@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import useUserStore from "../store/userData";
 
 import axios from "axios";
 
 function Header() {
   const { userData, setUserData } = useUserStore();
+  const [isNotificationOpen, setNotificationOpen] = useState(false);
   const iconURI = userData.iconpath;
 
   useEffect(() => {
@@ -16,7 +17,7 @@ function Header() {
 
     source.onmessage = (event) => {
       const data = JSON.parse(event.data);
-
+      console.log(data.userData);
       setUserData(data.userData);
     };
 
@@ -25,7 +26,7 @@ function Header() {
         source.close();
       }
     };
-  }, [setUserData]);
+  }, [userData]);
 
   const handleAcceptReject = async (notification, action) => {
     const teamName = notification.team.name;
@@ -45,13 +46,22 @@ function Header() {
     setUserData(response.data.userData);
   };
 
+  const handleIconClick = () => {
+    if (isNotificationOpen === true) {
+      setNotificationOpen(false);
+    } else {
+      setNotificationOpen(true);
+    }
+  };
+
   return (
-    <div className="flex justify-between">
-      <div className="text-5xl mt- ml-2">FILER :</div>
+    <div className="flex">
+      <div className="text-5xl mt-2 ml-2">FILER :</div>
       <img
         src={iconURI}
+        onClick={handleIconClick}
         alt="userIcon"
-        className="flex mt-2 mr-2 rounded-full h-10 w-10 "
+        className="flex mt-2 rounded-full h-10 w-10"
       />
       <div>
         {
@@ -60,32 +70,33 @@ function Header() {
         }
       </div>
       <div>
-        {userData.notifications.map(
-          (notification) =>
-            !notification.isRead && (
-              <div key={notification._id}>
-                <p>{notification.content}</p>
-                {notification.type === "가입요청" ? (
-                  <>
-                    <button
-                      onClick={() => handleAcceptReject(notification, "수락")}
-                    >
-                      수락
+        {isNotificationOpen &&
+          userData.notifications.map(
+            (notification) =>
+              !notification.isRead && (
+                <div key={notification._id}>
+                  <p>{notification.content}</p>
+                  {notification.type === "가입요청" ? (
+                    <>
+                      <button
+                        onClick={() => handleAcceptReject(notification, "수락")}
+                      >
+                        수락
+                      </button>
+                      <button
+                        onClick={() => handleAcceptReject(notification, "거절")}
+                      >
+                        거절
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={() => handleAcceptReject(notification)}>
+                      확인
                     </button>
-                    <button
-                      onClick={() => handleAcceptReject(notification, "거절")}
-                    >
-                      거절
-                    </button>
-                  </>
-                ) : (
-                  <button onClick={() => handleAcceptReject(notification)}>
-                    확인
-                  </button>
-                )}
-              </div>
-            ),
-        )}
+                  )}
+                </div>
+              ),
+          )}
       </div>
     </div>
   );

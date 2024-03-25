@@ -16,7 +16,7 @@ function App() {
 
   return (
     <div>
-      <div className="w-full h-full">
+      <div>
         {userData && <Header className="fixed top-0 left-0" />}
         <Routes>
           <Route

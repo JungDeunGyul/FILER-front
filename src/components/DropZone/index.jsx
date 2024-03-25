@@ -65,24 +65,39 @@ const DropZone = ({ teamId, userId, folderId, setFolder }) => {
   };
 
   return (
-    <div className={`dropzone ${isDragActive ? "active" : ""} `}>
+    <div
+      className={`dropzone ${
+        isDragActive ? "active" : ""
+      } border-2 border-dashed border-gray-300 rounded p-4 text-center cursor-pointer`}
+    >
       <div {...getRootProps()}>
         <input {...getInputProps()} />
         <p>클릭 혹은 파일을 이곳에 드롭하세요</p>
       </div>
-
       {files.length > 0 && (
-        <div>
+        <div className="mt-2">
           <ul>
             {files.map((file, index) => (
-              <li key={index}>
+              <li key={index} className="mb-2">
                 <h4>현재 파일:</h4>
                 <span>{file.name}</span>
               </li>
             ))}
           </ul>
-          <button onClick={handleUpload}>Upload</button>
-          <button onClick={handleCloseUpload}>Close</button>
+          <div className="mt-2">
+            <button
+              onClick={handleUpload}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mr-2 rounded"
+            >
+              Upload
+            </button>
+            <button
+              onClick={handleCloseUpload}
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -105,9 +105,9 @@ function TrashBin() {
   }
 
   return (
-    <div className="flex h-screen w-full">
-      <div className="flex flex-col items-start w-48 space-y-5 border-t-2 border-r-2 border-gray-300">
-        <div className="flex justify-between w-48 mt-2">
+    <div className="flex">
+      <div className="flex flex-col items-start w-48 h-screen space-y-5 border-t-2 border-r-2 border-gray-300">
+        <div className="flex w-48 mt-2">
           <div
             onClick={() => handleLeaveTeamClick(true)}
             style={{ cursor: "pointer" }}
@@ -119,12 +119,12 @@ function TrashBin() {
             <img
               key={user._id}
               src={user.user.iconpath}
-              className="rounded-full h-8 w-8"
+              className="rounded-full ml-1 h-8 w-8"
               alt="user icon"
             />
           ))}
           {currentTeam.members.length > 3 && (
-            <div className="flex items-center justify-center rounded-full h-8 w-8 bg-gray-300 text-center">
+            <div className="flex rounded-full ml-2 h-8 w-8 bg-gray-300">
               +{currentTeam.members.length - 3}
             </div>
           )}
