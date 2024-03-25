@@ -6,6 +6,7 @@ import { LeaveTeam } from "../Modal/LeaveTeam";
 import { FileDetail } from "../Modal/FileDetail";
 import { PermissionSetting } from "../Modal/PermissionSetting";
 import { FolderAccess } from "../Modal/FolderAccess";
+import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
 import { handleDownloadFile } from "../../utils/downloadFile";
@@ -25,6 +26,8 @@ function Team() {
   const [isFileDetailOpen, setFileDetailOpen] = useState(false);
   const [isPermissionModalOpen, setPermissionModalOpen] = useState(false);
   const [isFolderAccessModalOpen, setFolderAccessModalOpen] = useState(false);
+  const [isManageTeamMemberModalOpen, setManageTeamMemberModalOpen] =
+    useState(false);
 
   const [currentTeam, setCurrentTeam] = useState(null);
   const [currentUserRole, setUserRole] = useState("");
@@ -117,6 +120,10 @@ function Team() {
     setPermissionModalOpen(true);
   };
 
+  const handleTeamMemberClick = () => {
+    setManageTeamMemberModalOpen(true);
+  };
+
   const handleFileDragStart = (event, fileId) => {
     event.dataTransfer.setData("fileId", fileId);
   };
@@ -203,9 +210,9 @@ function Team() {
   }
 
   return (
-    <div className="flex h-screen w-full">
-      <div className="flex flex-col items-start w-48 space-y-5 border-t-2 border-r-2 border-gray-300">
-        <div className="flex justify-between w-48 mt-2">
+    <div className="flex">
+      <div className="flex flex-col items-start w-48 h-screen space-y-5 border-t-2 border-r-2 border-gray-300">
+        <div className="flex w-48 mt-2">
           <div
             onClick={() => handleLeaveTeamClick(true)}
             style={{ cursor: "pointer" }}
@@ -213,19 +220,19 @@ function Team() {
           >
             {currentTeam.name}
           </div>
-          {currentTeam.members.slice(0, 3).map((user) => (
-            <img
-              key={user._id}
-              src={user.user.iconpath}
-              className="rounded-full h-8 w-8"
-              alt="user icon"
-            />
-          ))}
-          {currentTeam.members.length > 3 && (
-            <div className="flex items-center justify-center rounded-full h-8 w-8 bg-gray-300 text-center">
-              +{currentTeam.members.length - 3}
-            </div>
-          )}
+          <div className="flex" onClick={() => handleTeamMemberClick()}>
+            {currentTeam.members.slice(0, 3).map((user) => (
+              <img
+                key={user._id}
+                src={user.user.iconpath}
+                className="rounded-full ml-1 h-8 w-8"
+                alt="user icon"
+              />
+            ))}
+            {currentTeam.members.length > 3 && (
+              <div className="flex">+{currentTeam.members.length - 3}</div>
+            )}
+          </div>
         </div>
         {currentTeam.ownedFolders &&
           currentTeam.ownedFolders.map((folder) => (
@@ -392,6 +399,13 @@ function Team() {
       )}
       {isFolderAccessModalOpen && (
         <FolderAccess setFolderAccessModalOpen={setFolderAccessModalOpen} />
+      )}
+      {isManageTeamMemberModalOpen && (
+        <ManageTeamMembers
+          setManageTeamMemberModalOpen={setManageTeamMemberModalOpen}
+          currentTeam={currentTeam}
+          currentUserRole={currentUserRole}
+        />
       )}
     </div>
   );

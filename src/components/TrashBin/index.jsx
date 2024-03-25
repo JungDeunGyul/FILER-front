@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { LeaveTeam } from "../Modal/LeaveTeam";
 import { DeleteRestoreFileFolder } from "../Modal/DeleteRestoreFileFolder";
+import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
 
@@ -20,6 +21,8 @@ function TrashBin() {
     isDeleteRestoreFileFolderModalOpen,
     setDeleteRestoreFileFolderModalOpen,
   ] = useState(false);
+  const [isManageTeamMemberModalOpen, setManageTeamMemberModalOpen] =
+    useState(false);
 
   const [selectedElementId, setSelectedElementId] = useState("");
   const [selectedType, setSelectedType] = useState("");
@@ -96,6 +99,10 @@ function TrashBin() {
     setDeleteRestoreFileFolderModalOpen(true);
   };
 
+  const handleTeamMemberClick = () => {
+    setManageTeamMemberModalOpen(true);
+  };
+
   if (!currentTeam) {
     return (
       <div className="relative flex items-center justify-center h-screen w-full">
@@ -115,19 +122,19 @@ function TrashBin() {
           >
             {currentTeam.name}
           </div>
-          {currentTeam.members.slice(0, 3).map((user) => (
-            <img
-              key={user._id}
-              src={user.user.iconpath}
-              className="rounded-full ml-1 h-8 w-8"
-              alt="user icon"
-            />
-          ))}
-          {currentTeam.members.length > 3 && (
-            <div className="flex rounded-full ml-2 h-8 w-8 bg-gray-300">
-              +{currentTeam.members.length - 3}
-            </div>
-          )}
+          <div className="flex" onClick={() => handleTeamMemberClick()}>
+            {currentTeam.members.slice(0, 3).map((user) => (
+              <img
+                key={user._id}
+                src={user.user.iconpath}
+                className="rounded-full ml-1 h-8 w-8"
+                alt="user icon"
+              />
+            ))}
+            {currentTeam.members.length > 3 && (
+              <div className="flex">+{currentTeam.members.length - 3}</div>
+            )}
+          </div>
         </div>
         {currentTeam.ownedFolders &&
           currentTeam.ownedFolders.map((folder) => (
@@ -223,6 +230,13 @@ function TrashBin() {
           selectedElementId={selectedElementId}
           selectedType={selectedType}
           setTrashBin={setTrashBin}
+          currentUserRole={currentUserRole}
+        />
+      )}
+      {isManageTeamMemberModalOpen && (
+        <ManageTeamMembers
+          setManageTeamMemberModalOpen={setManageTeamMemberModalOpen}
+          currentTeam={currentTeam}
           currentUserRole={currentUserRole}
         />
       )}
