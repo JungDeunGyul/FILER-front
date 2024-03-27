@@ -17,7 +17,7 @@ const DropZone = ({ teamId, userId, folderId, setFolder }) => {
     try {
       const formData = new FormData();
       files.forEach((file) => {
-        formData.append("file", file);
+        formData.append("file", file, encodeURIComponent(file.name));
       });
 
       if (folderId) {
