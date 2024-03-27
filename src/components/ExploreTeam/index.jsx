@@ -18,40 +18,41 @@ function ExploreTeam() {
   };
 
   return (
-    <div className="relative flex items-center justify-center h-screen w-full">
-      <div className="w-4/6 h-5/6">
-        <div className="flex justify-end mb-5">
+    <div className="flex items-center justify-center h-screen">
+      <div className="flex flex-col items-center">
+        <h1 className="text-3xl font-semibold mb-10">팀 관리</h1>
+        <div className="flex gap-5">
           <button
-            className="px-4 py-2 text-lg bg-blue-500 text-white rounded"
+            className="px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 ease-in-out"
             onClick={() => navigate("/myteam")}
           >
             팀 페이지로 이동
           </button>
-        </div>
-        <div>
-          <div className="border flex justify-between items-center">
-            <button className="px-24 py-24 text-6xl" onClick={handleCreateTeam}>
-              Create Team?
-            </button>
-
-            <button className="px-24 py-24 text-6xl" onClick={handleFindTeam}>
-              Find Team?
-            </button>
-          </div>
-
-          {isCreateTeamModalOpen && (
-            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
-              <CreateTeam setCreateTeamModalOpen={setCreateTeamModalOpen} />
-            </div>
-          )}
-
-          {isFindTeamModalOpen && (
-            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
-              <FindTeam setFindTeamModalOpen={setFindTeamModalOpen} />
-            </div>
-          )}
+          <button
+            className="px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 ease-in-out"
+            onClick={handleCreateTeam}
+          >
+            팀 생성하기
+          </button>
+          <button
+            className="px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 ease-in-out"
+            onClick={handleFindTeam}
+          >
+            팀 찾기
+          </button>
         </div>
       </div>
+      {isCreateTeamModalOpen && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+          <CreateTeam setCreateTeamModalOpen={setCreateTeamModalOpen} />
+        </div>
+      )}
+
+      {isFindTeamModalOpen && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+          <FindTeam setFindTeamModalOpen={setFindTeamModalOpen} />
+        </div>
+      )}
     </div>
   );
 }
