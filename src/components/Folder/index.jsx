@@ -28,6 +28,8 @@ function Folder() {
   const [isFolderAccessModalOpen, setFolderAccessModalOpen] = useState(false);
   const [isManageTeamMemberModalOpen, setManageTeamMemberModalOpen] =
     useState(false);
+  const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
+  const [hoveredFile, setHoveredFile] = useState(null);
 
   const [folderData, setFolder] = useState([]);
   const [currentUserRole, setUserRole] = useState("");
@@ -143,10 +145,11 @@ function Folder() {
     setLeaveTeamModalOpen(true);
   };
 
-  const handlePermissionClick = (elementId, type) => {
+  const handlePermissionClick = (event, elementId, type) => {
     setSelectedElementId(elementId);
     setSelectedType(type);
     setPermissionModalOpen(true);
+    setClickPosition({ x: event.clientX, y: event.clientY });
   };
 
   const handleTeamMemberClick = () => {
@@ -230,6 +233,14 @@ function Folder() {
     }
   };
 
+  const handleMouseEnter = (file) => {
+    setHoveredFile(file);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredFile(null);
+  };
+
   if (!currentTeam) {
     return <div>Loading...</div>;
   }
@@ -263,7 +274,9 @@ function Folder() {
           folderData.subFolders.map((folder) => (
             <div
               key={folder._id}
-              onClick={() => handlePermissionClick(folder._id, "folder")}
+              onClick={(event) =>
+                handlePermissionClick(event, folder._id, "folder")
+              }
               style={{ cursor: "pointer" }}
             >
               <p className="text-lg font-bold">📁 {folder.name}</p>
@@ -301,7 +314,10 @@ function Folder() {
             folderId={folderId}
             setFolder={setFolder}
           />
-          <div className="flex justify-end mr-5">
+          <div className="flex justify-between mr-5">
+            <div className="font-semibold mt-2 ml-2">
+              현재 폴더: {folderData.name}
+            </div>
             <input
               type="text"
               placeholder="폴더 / 파일 명을 입력하세요"
@@ -310,8 +326,8 @@ function Folder() {
               className="p-2 mt-4 ml-5 border"
             />
           </div>
-          <p>폴 더</p>
-          <div className="grid grid-cols-4 gap-6 m-2 p-2">
+          <p className="ml-2">폴 더</p>
+          <div className="grid grid-cols-4 gap-6 m-4 p-2">
             {filteredFolders.map((folder) => (
               <div
                 key={folder._id}
@@ -331,33 +347,37 @@ function Folder() {
               </div>
             ))}
           </div>
-          <p>파 일</p>
-          <div className="grid grid-cols-4 gap-6 m-2 p-2">
+          <p className="ml-2">파 일</p>
+          <div className="grid grid-cols-4 gap-6 m-4 p-2">
             {filteredFiles.map((file) => (
               <div
                 key={file._id}
                 draggable="true"
                 onDragStart={(e) => handleFileDragStart(e, file._id)}
+                onMouseEnter={() => handleMouseEnter(file)}
+                onMouseLeave={handleMouseLeave}
                 className="bg-gray-300 p-7 m-1 border relative flex flex-col"
               >
                 <div
                   onClick={() => handleFileClick(file._id)}
                   style={{ cursor: "pointer" }}
                 >
-                  <img
-                    src={getFileIconUrl(file.type)}
-                    alt={file.type}
-                    className="absolute top-1 left-2"
-                    style={{ width: "20px", height: "20px" }}
-                  />
-                  <p className="text-lg font-bold absolute">
-                    {file.name.length > 20
-                      ? `${file.name.substring(0, 15)}...`
-                      : file.name}
-                  </p>
+                  <div>
+                    <img
+                      src={getFileIconUrl(file.type)}
+                      alt={file.type}
+                      className="absolute top-1 left-2"
+                      style={{ width: "20px", height: "20px" }}
+                    />
+                    <p className="text-lg font-bold absolute">
+                      {file.name.length > 20
+                        ? `${file.name.substring(0, 20)}...`
+                        : file.name}
+                    </p>
+                  </div>
                 </div>
                 {selectedFile === file._id && (
-                  <div className="file-options mt-2">
+                  <div className="file-options mt-2 absolute top-full left-0">
                     <button
                       onClick={() =>
                         handleDownloadFile(
@@ -367,25 +387,27 @@ function Folder() {
                           currentUserRole,
                         )
                       }
-                      className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
+                      className="bg-blue-500 text-white px-1 py-1 rounded mr-2"
                     >
                       다운로드
                     </button>
                     <button
                       onClick={() => handleViewDetails(file)}
-                      className="bg-green-500 text-white px-3 py-1 rounded mr-2"
+                      className="bg-green-500 text-white px-1 py-1 rounded mr-2"
                     >
                       자세히 보기
                     </button>
                     <button
-                      onClick={() => handlePermissionClick(file._id, "file")}
-                      className="bg-gray-500 text-white px-3 py-1 rounded mr-2"
+                      onClick={(event) =>
+                        handlePermissionClick(event, file._id, "file")
+                      }
+                      className="bg-gray-500 text-white px-1 py-1 rounded mr-2"
                     >
                       권한 설정
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="bg-red-500 text-white px-3 py-1 rounded"
+                      className="bg-red-500 text-white px-1 py-1 rounded"
                     >
                       취소
                     </button>
@@ -393,6 +415,27 @@ function Folder() {
                 )}
               </div>
             ))}
+            {hoveredFile && (
+              <div
+                className="absolute bg-gray-500 text-white p-2 rounded"
+                style={{
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                }}
+              >
+                <p className="mb-1">파일명: {hoveredFile.name}</p>
+                <p className="mb-1">접근 권한: {hoveredFile.visibleTo} 이상</p>
+                <p className="mb-1">업로드한 사람: {hoveredFile.uploadUser}</p>
+                {(hoveredFile.type === "application/pdf" ||
+                  hoveredFile.type === "image/jpeg" ||
+                  hoveredFile.type === "image/png") && (
+                  <iframe
+                    src={hoveredFile.filePath}
+                    className="w-full h-40"
+                  ></iframe>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -413,7 +456,11 @@ function Folder() {
         />
       )}
       {isFileDetailOpen && (
-        <FileDetail setFileDetailOpen={setFileDetailOpen} file={selectedFile} />
+        <FileDetail
+          setFileDetailOpen={setFileDetailOpen}
+          file={selectedFile}
+          currentUserRole={currentUserRole}
+        />
       )}
       {isPermissionModalOpen && (
         <PermissionSetting
@@ -421,6 +468,7 @@ function Folder() {
           selectedElementId={selectedElementId}
           selectedType={selectedType}
           currentUserRole={currentUserRole}
+          clickPosition={clickPosition}
         />
       )}
       {isFolderAccessModalOpen && (
