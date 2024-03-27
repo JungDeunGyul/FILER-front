@@ -56,12 +56,12 @@ function Header() {
 
   return (
     <div className="flex">
-      <div className="text-5xl mt-2 ml-2">FILER :</div>
+      <img src="logo/FilerLoGo.png" className=" mt-2 h-10 w-12" />
       <img
         src={iconURI}
         onClick={handleIconClick}
         alt="userIcon"
-        className="flex mt-2 rounded-full h-10 w-10"
+        className="flex mt-2 ml-24 rounded-full h-10 w-10"
       />
       <div>
         {
