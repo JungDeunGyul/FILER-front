@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import UpdateFileDropZone from "../UpdateFileDropZone";
 import { handleDownloadFile } from "../../utils/downloadFile";
 
@@ -14,16 +14,8 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
 
   useEffect(() => {
     if (selectedFile) {
-      if (selectedFile.file.type === "application/pdf") {
-        const document = (
-          <iframe
-            src={selectedFile.file.filePath}
-            style={{ width: "100%", height: "800px" }}
-          ></iframe>
-        );
-        setSelectedDocument(document);
-      } else {
-        const document = (
+      const document = (
+        <div style={{ width: "100%", height: "80vh" }}>
           <DocViewer
             key={selectedFile.file._id}
             documents={[
@@ -42,44 +34,41 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
             }}
             pluginRenderers={DocViewerRenderers}
           />
-        );
-        setSelectedDocument(document);
-      }
+        </div>
+      );
+      setSelectedDocument(document);
     } else {
       setSelectedDocument(null);
     }
   }, [selectedFile]);
 
   const MemoizedFirstDocViewer = useMemo(() => {
-    if (
-      file.versions[file.versions.length - 1].file.type === "application/pdf"
-    ) {
-      return (
-        <iframe
-          src={file.versions[file.versions.length - 1].file.filePath}
-          style={{ width: "100%", height: "800px" }}
-        ></iframe>
-      );
+    if (!file) {
+      return null;
     }
 
+    const latestFileVersion = file.versions[file.versions.length - 1];
+
     return (
-      <DocViewer
-        documents={[
-          {
-            uri: file.versions[file.versions.length - 1].file.filePath,
-            fileType: file.versions[file.versions.length - 1].file.type,
-          },
-        ]}
-        prefetchMethod="GET"
-        config={{
-          header: {
-            disableHeader: true,
-            disableFileName: true,
-            retainURLParams: true,
-          },
-        }}
-        pluginRenderers={DocViewerRenderers}
-      />
+      <div style={{ width: "100%", height: "80vh" }}>
+        <DocViewer
+          documents={[
+            {
+              uri: latestFileVersion.file.filePath,
+              fileType: latestFileVersion.file.type,
+            },
+          ]}
+          prefetchMethod="GET"
+          config={{
+            header: {
+              disableHeader: true,
+              disableFileName: true,
+              retainURLParams: true,
+            },
+          }}
+          pluginRenderers={DocViewerRenderers}
+        />
+      </div>
     );
   }, [file]);
 
@@ -101,7 +90,6 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
 
   const handleFileClick = (file) => {
     setSelectedFile(file);
-
     setChangedFields(findChangedFields(selectedFile, file));
   };
 
@@ -157,8 +145,8 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
           <div className="md:w-1/2 p-4">{MemoizedFirstDocViewer}</div>
           <div className="md:w-1/2 p-4">{selectedDocument}</div>
           <div className="md:w-1/2 p-4 border-l border-gray-200">
-            <h2 className="text-lg font-bold mb-2">업데이트 내역</h2>
-            <ul className="overflow-auto max-h-96">
+            <h2 className="text-lg font-bold mb-4">업데이트 내역</h2>
+            <ul className="divide-y divide-gray-200">
               {file.versions
                 .slice()
                 .reverse()
@@ -166,28 +154,38 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
                   <li
                     key={version._id}
                     onClick={() => handleFileClick(version)}
-                    className="mb-2 border"
+                    className="py-4 cursor-pointer hover:bg-gray-50 transition duration-300"
                   >
-                    <p
-                      onClick={() =>
-                        handleDownloadFile(
-                          version.ownerTeam,
-                          version._id,
-                          version.name,
-                          currentUserRole,
-                        )
-                      }
-                    >
-                      다운로드
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p
+                          className="text-blue-500 font-bold"
+                          onClick={() =>
+                            handleDownloadFile(
+                              version.ownerTeam,
+                              version._id,
+                              version.name,
+                              currentUserRole,
+                            )
+                          }
+                        >
+                          다운로드
+                        </p>
+                        <p className="text-gray-600 text-sm">
+                          {formatDate(version.file.created_at)}
+                        </p>
+                      </div>
+                      <p className="text-gray-700">
+                        버전 번호: {version.versionNumber}
+                      </p>
+                    </div>
+                    <p className="text-gray-700">
+                      업로드 유저: {version.file.uploadUser}
                     </p>
-                    <p>버전 번호: {version.versionNumber}</p>
-                    <p>업로드 유저: {version.file.uploadUser}</p>
-                    <p>업로드 날짜: {formatDate(version.file.created_at)}</p>
                     {selectedFile &&
                       selectedFile.file._id === version.file._id &&
                       changedFields.map((field) => (
-                        <p key={field} className="font-bold">
-                          {console.log(field)}
+                        <p key={field} className="text-green-500 text-sm">
                           {field} {version.file[field.toLowerCase()]}
                         </p>
                       ))}
