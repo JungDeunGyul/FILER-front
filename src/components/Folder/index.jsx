@@ -32,10 +32,10 @@ function Folder() {
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
 
   const [folderData, setFolder] = useState([]);
-  const [currentUserRole, setUserRole] = useState("");
   const [currentTeam, setCurrentTeam] = useState(null);
-  const [filterValue, setFilterValue] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [currentUserRole, setUserRole] = useState("");
+  const [filterValue, setFilterValue] = useState("");
   const [selectedElementId, setSelectedElementId] = useState("");
   const [selectedType, setSelectedType] = useState("");
 
@@ -83,7 +83,7 @@ function Folder() {
   };
 
   const filteredFolders = useMemo(() => {
-    return folderData
+    return folderData && folderData.subFolders
       ? folderData.subFolders.filter((folder) =>
           folder.name.toLowerCase().includes(filterValue.toLowerCase()),
         )
@@ -91,7 +91,7 @@ function Folder() {
   }, [folderData, filterValue]);
 
   const filteredFiles = useMemo(() => {
-    return folderData
+    return folderData && folderData.files
       ? folderData.files.filter((file) =>
           file.name.toLowerCase().includes(filterValue.toLowerCase()),
         )
