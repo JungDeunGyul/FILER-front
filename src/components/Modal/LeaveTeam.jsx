@@ -29,7 +29,7 @@ export function LeaveTeam({ setLeaveTeamModalOpen, currentTeam }) {
       setUserData(response.data.updatedUser);
       navigate("/myteam");
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
     setLeaveTeamModalOpen(false);
   };
