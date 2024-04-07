@@ -27,10 +27,9 @@ function TrashBin() {
   const [selectedElementId, setSelectedElementId] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [currentUserRole, setUserRole] = useState("");
-
+  const [filterValue, setFilterValue] = useState("");
   const [currentTeam, setCurrentTeam] = useState(null);
   const [trashBin, setTrashBin] = useState([]);
-  const [filterValue, setFilterValue] = useState("");
 
   useEffect(() => {
     const team = userData.teams.find((team) => team._id === teamId);
@@ -112,107 +111,108 @@ function TrashBin() {
   }
 
   return (
-    <div className="flex">
-      <div className="flex flex-col items-start w-48 h-screen space-y-5 border-t-2 border-r-2 border-gray-300">
-        <div className="flex w-48 mt-2">
+    <div className="flex h-screen">
+      <div className="w-1/4 bg-gray-100 p-4">
+        <div className="flex justify-between items-center mb-4">
           <div
             onClick={() => handleLeaveTeamClick(true)}
-            style={{ cursor: "pointer" }}
-            className="text-2xl font-bold"
+            className="text-xl font-bold cursor-pointer"
           >
             {currentTeam.name}
           </div>
-          <div className="flex" onClick={() => handleTeamMemberClick()}>
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => handleTeamMemberClick()}
+          >
             {currentTeam.members.slice(0, 3).map((user) => (
               <img
                 key={user._id}
                 src={user.user.iconpath}
-                className="rounded-full ml-1 h-8 w-8"
+                className="w-8 h-8 rounded-full ml-1"
                 alt="user icon"
               />
             ))}
             {currentTeam.members.length > 3 && (
-              <div className="flex">+{currentTeam.members.length - 3}</div>
+              <div className="ml-1">+{currentTeam.members.length - 3}</div>
             )}
           </div>
         </div>
-        {currentTeam.ownedFolders &&
-          currentTeam.ownedFolders.map((folder) => (
-            <div
-              key={folder._id}
-              style={{ cursor: "pointer" }}
-              onClick={() => handleFolderClick(folder._id)}
-            >
-              <p className="text-lg font-bold">📁 {folder.name}</p>
-            </div>
-          ))}
-        <div style={{ cursor: "pointer" }}>
-          <button>🗑️ 휴지통</button>
-        </div>
+        <ul>
+          {currentTeam.ownedFolders &&
+            currentTeam.ownedFolders.map((folder) => (
+              <li
+                key={folder._id}
+                onClick={() => handleFolderClick(folder._id)}
+                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-200"
+              >
+                <span className="text-gray-700">📁 {folder.name}</span>
+              </li>
+            ))}
+        </ul>
+        <button
+          onClick={() =>
+            navigate(`/team/${encodeURIComponent(currentTeam._id)}/trash`)
+          }
+          className="block w-full mt-4 py-2 px-3 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+        >
+          🗑️ 휴지통
+        </button>
       </div>
-      <div className="flex-grow flex flex-col">
+      <div className="flex-grow p-4">
         <div>
-          <div className="flex justify-end m-5">
+          <div className="flex items-center mb-4">
             <button
-              className="px-4 py-2 text-lg bg-blue-500 text-white rounded"
               onClick={() => navigate("/myteam")}
+              className="py-2 px-4 bg-gray-500 text-white rounded-md hover:bg-gray-600"
             >
               팀 목록
             </button>
           </div>
-        </div>
-        <div className="flex-grow border-2 border-gray-200 m-5">
-          <div className="flex justify-end mr-5">
+          <div className="relative">
             <input
               type="text"
               placeholder="폴더 / 파일 명을 입력하세요"
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
-              className="p-2 mt-4 ml-5 border"
+              className="block w-full py-2 px-3 border rounded-md mb-4"
             />
-          </div>
-          <p>폴 더</p>
-          <div className="grid grid-cols-4 gap-6 m-2 p-2">
-            {filteredFolders.map((folder) => (
-              <div
-                key={folder.item._id}
-                onClick={() =>
-                  handleDeleteRestoreModalClick(folder.item._id, "folder")
-                }
-                style={{ cursor: "pointer" }}
-                className="bg-gray-300 p-7 m-1 border relative"
-              >
-                <p className="text-lg font-bold absolute top-1 left-2">
-                  📁 {folder.item.name}
-                </p>
-              </div>
-            ))}
-          </div>
-          <p>파 일</p>
-          <div className="grid grid-cols-4 gap-6 m-2 p-2">
-            {filteredFiles.map((file) => (
-              <div
-                key={file.item._id}
-                onClick={() =>
-                  handleDeleteRestoreModalClick(file.item._id, "file")
-                }
-                className="bg-gray-300 p-7 m-1 border relative flex flex-col"
-              >
-                <div style={{ cursor: "pointer" }}>
+            <div className="grid grid-cols-4 gap-4">
+              {filteredFolders.map((folder) => (
+                <div
+                  key={folder.item._id}
+                  onClick={() =>
+                    handleDeleteRestoreModalClick(folder.item._id, "folder")
+                  }
+                  className="group relative cursor-pointer border border-gray-200 rounded-md p-4 hover:bg-gray-50"
+                >
+                  <span className="block mb-2 text-gray-600">
+                    📁 {folder.item.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-4 mt-4">
+              {filteredFiles.map((file) => (
+                <div
+                  key={file.item._id}
+                  onClick={() =>
+                    handleDeleteRestoreModalClick(file.item._id, "file")
+                  }
+                  className="group relative cursor-pointer border border-gray-200 rounded-md p-4 hover:bg-gray-50"
+                >
                   <img
                     src={getFileIconUrl(file.item.type)}
                     alt={file.item.type}
-                    className="absolute top-1 left-2"
-                    style={{ width: "20px", height: "20px" }}
+                    className="w-8 h-8 mr-2"
                   />
-                  <p className="text-lg font-bold absolute">
+                  <span className="text-gray-600">
                     {file.item.name.length > 20
-                      ? `${file.item.name.substring(0, 15)}...`
+                      ? `${file.item.name.substring(0, 20)}...`
                       : file.item.name}
-                  </p>
+                  </span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
