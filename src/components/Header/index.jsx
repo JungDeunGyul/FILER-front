@@ -52,11 +52,7 @@ function Header() {
   return (
     <header className="flex justify-between items-center bg-gray-800 text-white py-4 px-8">
       <div className="flex items-center">
-        <img
-          src="public/FilerLoGo.png"
-          className="h-10 w-10"
-          alt="Filer Logo"
-        />
+        <img src="/FilerLoGo.png" className="h-10 w-10" alt="Filer Logo" />
         <h1 className="ml-4 text-lg font-semibold">Filer</h1>
       </div>
       <div className="relative">
