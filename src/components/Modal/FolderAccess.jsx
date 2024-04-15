@@ -1,3 +1,5 @@
+import React from "react";
+
 export function FolderAccess({ setFolderAccessModalOpen }) {
   const handleModalClick = () => {
     setFolderAccessModalOpen(false);
