@@ -6,9 +6,42 @@ import axios from "axios";
 const DropZone = ({ teamId, userId, folderId, setFolder }) => {
   const { setUserData } = useUserStore();
   const [files, setFiles] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const allowedFileTypes = {
+    bmp: "image/bmp",
+    csv: "text/csv",
+    odt: "application/vnd.oasis.opendocument.text",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    gif: "image/gif",
+    htm: "text/htm",
+    html: "text/html",
+    jpg: "image/jpg",
+    jpeg: "image/jpeg",
+    pdf: "application/pdf",
+    png: "image/png",
+    ppt: "application/vnd.ms-powerpoint",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    tiff: "image/tiff",
+    txt: "text/plain",
+    xls: "application/vnd.ms-excel",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    mp4: "video/mp4",
+  };
 
   const onDrop = useCallback((acceptedFiles) => {
-    setFiles(acceptedFiles);
+    const filteredFiles = acceptedFiles.filter((file) => {
+      const fileType = file.name.split(".").pop().toLowerCase();
+      const fileMimeType = allowedFileTypes[fileType];
+      if (fileMimeType !== undefined && file.type === fileMimeType) {
+        return true;
+      } else {
+        setErrorMessage(`허용되지 않은 파일 형식입니다: ${file.name}`);
+        return false;
+      }
+    });
+    setFiles(filteredFiles);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
@@ -74,6 +107,7 @@ const DropZone = ({ teamId, userId, folderId, setFolder }) => {
         <input {...getInputProps()} />
         <p>클릭 혹은 파일을 이곳에 드롭하세요</p>
       </div>
+      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
       {files.length > 0 && (
         <div className="mt-2">
           <ul>
