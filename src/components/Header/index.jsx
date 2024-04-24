@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import useUserStore from "../store/userData";
 import axios from "axios";
 
 function Header() {
+  const navigate = useNavigate();
+
   const { userData, setUserData } = useUserStore();
   const [isNotificationOpen, setNotificationOpen] = useState(false);
   const iconURI = userData.iconpath;
@@ -51,7 +54,10 @@ function Header() {
 
   return (
     <header className="flex justify-between items-center bg-gray-800 text-white py-4 px-8">
-      <div className="flex items-center">
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => navigate("/Home")}
+      >
         <img src="/FilerLoGo.png" className="h-10 w-10" alt="Filer Logo" />
         <h1 className="ml-4 text-lg font-semibold">Filer</h1>
       </div>
