@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../../utils/firebase";
 import useUserStore from "../store/userData";
@@ -27,6 +27,7 @@ function Login() {
         },
         { withCredentials: true },
       );
+
       setUserData(res.data.user);
       navigate("/Home");
     } catch (err) {
