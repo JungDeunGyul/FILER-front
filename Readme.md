@@ -25,10 +25,11 @@
 - [💪 Motivation](#-motivation)
 - [🕹️ Features](#-features)
 - [💡 Why Use React?](#-Why-Use-React)
-
   - [1. 컴포넌트 기반 아키텍처](#1-컴포넌트-기반-아키텍처)
   - [2. 가상 DOM과 성능](#2-가상-dom과-성능)
-
+- [🧑🏻‍🔧 Pain Point](#-Pain-Point)
+  - [1. 클라이언트에서 파일을 업로드시 zip파일로 저장되어 화면 렌더링 시 문제](#1-클라이언트에서-파일을-업로드시-zip파일로-저장되어-화면-렌더링-시-문제)
+  - [2. 한글 파일 이름이 깨지는 현상](#2-한글-파일-이름이-깨지는-현상)
 - [🗓 Schedule](#-schedule)
 - [📒 프로젝트 소감](#-프로젝트-소감)
 
@@ -59,6 +60,7 @@
 ### **Client**
 
 ![](https://img.shields.io/badge/javascript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![](https://img.shields.io/badge/typescript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=React&logoColor=black)
 ![](https://img.shields.io/badge/zustand-%2320232a.svg?style=flat-square&logo=react&logoColor=white)
 ![](https://img.shields.io/badge/tailwindCSS-06B6D4?style=flat-square&logo=tailwindCSS&logoColor=white)
@@ -76,6 +78,13 @@
 ### **Test**
 
 ![](https://img.shields.io/badge/Jest-C21325?style=flat-square&logo=jest&logoColor=white)
+![](https://img.shields.io/badge/React_DOM_Testing-61DAFB?style=flat-square&logo=react&logoColor=white)
+![](https://img.shields.io/badge/Vitest-FF4785?style=flat-square&logo=vite&logoColor=white)
+
+### Deployment
+
+![](https://img.shields.io/badge/netlify-%23000000.svg?style=for-the-badge&logo=netlify&logoColor=#00C7B7)
+![](https://img.shields.io/badge/Elastic%20Beanstalk-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
 
 <br>
 
@@ -133,6 +142,18 @@ FILER : 서비스의 주요 기능입니다.
   가상 DOM을 사용하는 React는 변경된 부분만을 업데이트하여 실제 DOM 조작을 최소화함으로써 빠른 응답성을 제공합니다. 따라서 사용자가 파일을 업로드하거나 버전을 비교하는 등의 작업을 할 때 화면이 빠르게 업데이트되어 사용자 경험을 향상 시킬 수 있다고 생각하였습니다.
 
 이렇게 React의 컴포넌트 기반 아키텍처와 가상 DOM을 통해 프로젝트의 UI 관리와 성능 최적화 하였습니다.
+
+<br>
+
+# **🧑🏻‍🔧 Pain Point**
+
+### 1) 클라이언트에서 파일을 업로드시 zip파일로 저장되어 화면 렌더링 시 문제
+
+- 클라이언트에서 파일 업로드 시 AWS S3에서 .ppt, .pptx, .xls, .xlsx 파일을 .zip파일로 오인식하여 .zip파일로 저장되어 화면 렌더링 시 문제가 발생하였습니다. 이 문제를 해결하기 위해 서버 측에서 adm-zip 라이브러리를 사용하여 해결하려고 하였지만, 파일을 압축 해제한 결과 업로드 하는 과정에서 파일 자체가 손상되어 있는 걸 발견하였습니다. 그러하여 multer와 multerS3를 결합하여 파일 업로드를 구성하는 로직에서 파일 이름 마지막 부분에 파일의 확장자를 명시하였고, 이로 인해 더 이상 오인식하여 .zip으로 저장하지 않게 되어 렌더링 시 발생하는 문제를 해결하였습니다.
+
+### 2) 한글 파일 이름이 깨지는 현상
+
+- 한글 파일 이름은 URL에 사용될 때 인코딩되지 않으면 글자가 깨지는 문제가 발생했습니다. 이를 해결하기 위해 클라이언트에서는 파일 이름을 URL 인코딩하여 서버에 전송하였고, 서버에서는 클라이언트에서 전송된 파일 이름을 URL 디코딩하여 파일 시스템에서 허용되는 형식으로 변환하여 저장하였습니다. 이를 통해 올바른 파일 이름으로 저장되어 문제가 해결되었습니다.
 
 <br>
 
