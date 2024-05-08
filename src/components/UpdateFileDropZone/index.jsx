@@ -8,6 +8,7 @@ const UpdateFileDropZone = ({ fileId }) => {
   const [files, setFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const MAX_FILE_SIZE_MB = 30;
   const allowedFileTypes = {
     bmp: "image/bmp",
     csv: "text/csv",
@@ -32,6 +33,14 @@ const UpdateFileDropZone = ({ fileId }) => {
 
   const onDrop = useCallback((acceptedFiles) => {
     const filteredFiles = acceptedFiles.filter((file) => {
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        setErrorMessage(
+          `파일 크기가 ${MAX_FILE_SIZE_MB}MB를 초과합니다: ${file.name}`,
+        );
+        return false;
+      }
+
       const fileType = file.name.split(".").pop().toLowerCase();
       const fileMimeType = allowedFileTypes[fileType];
       if (fileMimeType !== undefined && file.type === fileMimeType) {
