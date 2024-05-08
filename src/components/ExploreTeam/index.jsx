@@ -47,7 +47,6 @@ function ExploreTeam() {
           <CreateTeam setCreateTeamModalOpen={setCreateTeamModalOpen} />
         </div>
       )}
-
       {isFindTeamModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
           <FindTeam setFindTeamModalOpen={setFindTeamModalOpen} />
