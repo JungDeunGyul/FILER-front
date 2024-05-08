@@ -1,12 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import UpdateFileDropZone from "../UpdateFileDropZone";
 import { handleDownloadFile } from "../../utils/downloadFile";
+import useUserStore from "../store/userData";
+import axios from "axios";
 
 export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [changedFields, setChangedFields] = useState([]);
+  const { userData, setUserData } = useUserStore();
+  const commentRef = useRef("");
 
   const handleModalClick = () => {
     setFileDetailOpen(false);
@@ -41,6 +45,28 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
       setSelectedDocument(null);
     }
   }, [selectedFile]);
+
+  const handleFileClick = (file) => {
+    setSelectedFile(file);
+    setChangedFields(findChangedFields(selectedFile, file));
+    commentRef.current = "";
+  };
+
+  const handleCommentChange = (event) => {
+    commentRef.current = event.target.value;
+  };
+
+  const handleCommentSubmit = async (fileID) => {
+    const comment = commentRef.current;
+    const userId = userData._id;
+    const response = await axios.post(
+      `${import.meta.env.VITE_SERVER_URL}/file/${fileID}/newcomment/${userId}`,
+      { comment },
+    );
+
+    setUserData(response.data.user);
+    commentRef.current = "";
+  };
 
   const MemoizedFirstDocViewer = useMemo(() => {
     if (!file) {
@@ -87,11 +113,6 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
       </div>
     );
   }
-
-  const handleFileClick = (file) => {
-    setSelectedFile(file);
-    setChangedFields(findChangedFields(selectedFile, file));
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -156,15 +177,16 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
                     onClick={() => handleFileClick(version)}
                     className="py-4 cursor-pointer hover:bg-gray-50 transition duration-300"
                   >
+                    {console.log(version)}
                     <div className="flex justify-between items-center">
                       <div>
                         <p
                           className="text-blue-500 font-bold"
                           onClick={() =>
                             handleDownloadFile(
-                              version.ownerTeam,
-                              version._id,
-                              version.name,
+                              version.file.ownerTeam,
+                              version.file._id,
+                              version.file.name,
                               currentUserRole,
                             )
                           }
@@ -189,6 +211,46 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
                           {field} {version.file[field.toLowerCase()]}
                         </p>
                       ))}
+                    {selectedFile &&
+                      selectedFile.file._id === version.file._id &&
+                      version.file.comments.length > 0 && (
+                        <div>
+                          <h3 className="font-bold mt-2 mb-1">댓글</h3>
+                          {version.file.comments.map((comment) => (
+                            <div key={comment._id} className="border-t pt-2">
+                              <div className="flex justify-between">
+                                <p className="text-sm text-gray-500">
+                                  {"작성자: "}
+                                  {comment.user.nickname}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {formatDate(comment.created_at)}
+                                </p>
+                              </div>
+                              <p className="text-gray-700">{comment.content}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    {selectedFile &&
+                      selectedFile.file._id === version.file._id && (
+                        <div className="mt-2">
+                          <textarea
+                            className="border rounded p-2 w-full"
+                            placeholder="댓글 작성..."
+                            ref={commentRef}
+                            onChange={handleCommentChange}
+                          />
+                          <button
+                            className="mt-2 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                            onClick={() =>
+                              handleCommentSubmit(selectedFile.file._id)
+                            }
+                          >
+                            댓글 작성
+                          </button>
+                        </div>
+                      )}
                   </li>
                 ))}
             </ul>
