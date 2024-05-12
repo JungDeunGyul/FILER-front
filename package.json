@@ -12,6 +12,8 @@
     "test": "jest",
     "coverage": "jest --coverage"
   },
+  "proxy": "http://filerhub.ap-northeast-2.elasticbeanstalk.com/",
+  "homepage": "http://filerhub.ap-northeast-2.elasticbeanstalk.com/",
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.14.1",
     "@vitejs/plugin-react": "^4.2.1",
@@ -19,6 +21,7 @@
     "dotenv": "^16.4.5",
     "esbuild-jest": "^0.5.0",
     "firebase": "^10.8.1",
+    "http-proxy-middleware": "^3.0.0",
     "jest-environment-jsdom": "^29.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
