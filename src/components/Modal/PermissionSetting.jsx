@@ -67,7 +67,7 @@ export function PermissionSetting({
         left: `${clickPosition.x}px`,
       }}
     >
-      <div className="bg-white rounded-md p-6 ">
+      <div className="bg-white bg-opacity-40 rounded-md p-6 ">
         <button
           onClick={(event) => handlePermissionSettingButton(event, "팀장")}
           className="block py-2 px-4 text-gray-800 bg-gray-200 rounded-md mb-2"
