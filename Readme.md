@@ -19,7 +19,7 @@
 <br>
 
 # 📖 CONTENTS
-- [💪 Background & Progress](#-background--progress)
+- [💪 Project Background & Progress](#-project-background--progress)
   - [1. 프로젝트 배경 및 동기](#1-프로젝트-배경-및-동기)
     - [프로젝트 배경](#프로젝트-배경)
     - [프로젝트 동기](#프로젝트-동기)
@@ -31,7 +31,7 @@
       - [Vite를 사용한 이유](#vite를-사용한-이유)
 - [🔍 Preview](#-preview)
 - [📚 Tech Stacks](#-tech-stacks)
-- [🕹️ Features](#-features)
+- [🕹️ Features](#️-features)
 - [💡 Why Use React?](#-why-use-react)
   - [1. 컴포넌트 기반 아키텍처](#1-컴포넌트-기반-아키텍처)
   - [2. 가상 DOM과 성능](#2-가상-dom과-성능)
@@ -63,7 +63,7 @@
     - [`encodeURIComponent`와 `decodeURIComponent`를 사용한 이유](#encodeuricomponent와-decodeuricomponent를-사용한-이유)
     - [[결론]: `encodeURIComponent`와 `decodeURIComponent`를 사용](#결론-encodeuricomponent와-decodeuricomponent를-사용)
     - [[회고]: 사용자가 파일 업로드, 다운로드를 시도 할때 생긴 문제](#문제점-1-사용자가-파일-업로드-다운로드를-시도-할때-생긴-문제)
-- [[프로젝트 개선점]](#프로젝트-개선점)
+- [📋 프로젝트 개선점](#-프로젝트-개선점)
   - [1. 파일 업로드 후 팀원끼리 즉시 확인 가능하게 개선](#1-파일-업로드-후-팀원끼리-즉시-확인-가능하게-개선)
   - [2. Typescript](#2-typescript)
 - [📒 프로젝트 소감](#-프로젝트-소감)
@@ -750,7 +750,7 @@ module.exports = s3Uploader;
 
 이번 경험을 통해 논리적 사고의 중요성과 문제 해결 과정에서의 단계별 접근 방법을 깨달았습니다. 또한, 기술적인 문제에 직면했을 때 당황하지 않고 문제를 해결해 나가는 능력을 기를 수 있었다고 생각합니다.
 
-## [프로젝트 개선점]
+# **📋 프로젝트 개선점**
 
 ### 1. 파일 업로드 후 팀원 끼리 즉시 확인 가능하게 개선
 ---
