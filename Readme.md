@@ -50,7 +50,14 @@
       - [adm-zip 라이브러리 사용 결과](#adm-zip-라이브러리-사용-결과)
     - [[해결방법 2]: multer와 multerS3 MIME 유형을 명시적으로 작성](#해결방법-2-multer와-multers3-mime-유형을-명시적으로-작성)
       - [[제약사항]: MIME 유형을 명시적으로 작성 할 경우](#제약사항-mime-유형을-명시적으로-작성-할-경우)
-    - [[결론]: `multerS3.AUTO_CONTENT_TYPE` 사용](#결론-multers3auto_content_type-사용)
+    - [[해결방법 3]: multerS3.AUTO_CONTENT_TYPE, 명시적으로 확장자 입력](#해결방법-3-multers3auto_content_type-명시적으로-확장자-입력)
+    - [문제]
+    - [[해결방법 4]: mime-types 라이브러리를 사용](#해결방법-4-mime-types-라이브러리를-사용)
+      - [왜 mime-types 라이브러리를 사용했는가?](#왜-mime-types-라이브러리를-사용했는가)
+      - [`multerS3.AUTO_CONTENT_TYPE`의 문제점과 해결](#multers3auto_content_type의-문제점과-해결)
+      - [mime-types 라이브러리 사용의 장점](#mime-types-라이브러리-사용의-장점)
+      - [mime-types 라이브러리 사용의 단점](#mime-types-라이브러리-사용의-단점)
+    - [[결론]: mime-types 라이브러리 사용](#결론-mime-types-라이브러리-사용)
     - [[회고]: 파일 업로드 및 다운로드 문제 해결을 통한 개발 경험 회고](#회고-파일-업로드-및-다운로드-문제-해결을-통한-개발-경험-회고)
   - [[문제점 2]: 한글 파일 이름이 깨지는 현상](#문제점-2-한글-파일-이름이-깨지는-현상)
     - [[원인]](#원인)
@@ -137,7 +144,7 @@ Filer: 는 팀 협업을 위한 파일 공유 및 관리 플랫폼으로, 팀원
 1. **알림 및 이벤트 알림:**
     - 팀 가입 요청 및 팀 가입 수락 및 거절에 대한 알람을 제공합니다.
 2. **휴지통 및 복구:**
-    - 사용자가 실수로 파일을 삭제했을 때 손쉽게 회복할 수 있습니다.
+    - 사용자가 실수로 파일을 삭제했을 때 복구 할 수있습니다.
 
 ### 3. 프로젝트 일정
 ---
@@ -265,15 +272,30 @@ Waterfall Model은 각 단계가 순차적으로 진행되는 방식입니다. �
 
 **번들링 방식:**
 
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img width="400" src="public/vite-esm-based-dev-server.png" alt="vite esm base">
+        <p>ESM 기반 개발 서버</p>
+      </td>
+      <td align="center">
+        <img width="400" src="public/bundle-based-dev-server.png" alt="bundle base">
+        <p>번들 기반 개발 서버</p>
+      </td>
+    </tr>
+  </table>
+</div>
+
 - Vite: 개별 파일들을 처리하기 위해 브라우저에서 동작하는 ES 모듈 번들러를 사용합니다. 개발 서버에서는 모듈들을 실시간으로 처리하고, 프로덕션 빌드에서는 더 빠른 Rollup을 사용합니다.
 
 - Webpack: 모든 모듈을 번들링한 후에 브라우저에서 사용할 수 있는 번들 파일을 생성합니다.
 
 **개발 서버의 성능:**
 
-- Vite: 개발 서버가 빠르며, HMR이 빠르게 동작하여 코드 변경을 즉시 반영할 수 있습니다.
+- Vite: 기본 ESM을 통해 HMR을 사용하여 일부 번들링 작업을 브라우저로 오프로드하여 서보로드와 대기 시간을 줄입니다. 전체 페이지를 다시 로드하지 않고 빠른 업데이트를 보장합니다.
 
-- Webpack: 개발 서버가 Vite에 비해 상대적으로 느리고, HMR도 더 많은 시간이 걸릴 수 있습니다.
+- Webpack: HMR을 지원하여 실시간 업데이트를 가능하게 하고 개발 중에 애플리케이션 상태를 보존합니다. 하지만 기본 ES 모듈을 활용하는 데 있어 잠재적인 제한으로 인해 서버 로드 및 대기 시간이 높아질 수 있습니다.
 
 **기본 설정:**
 
@@ -283,15 +305,22 @@ Waterfall Model은 각 단계가 순차적으로 진행되는 방식입니다. �
 
 **플러그인 생태계:**
 
-- Webpack: 다양한 로더와 플러그인을 지원하며, 많은 개발자들이 사용하는 다양한 플러그인이 있습니다.
-
 - Vite: 아직은 Webpack에 비해 플러그인이 적습니다.
+
+- Webpack: 다양한 로더와 플러그인을 지원하며, 많은 개발자들이 사용하는 다양한 플러그인이 있습니다.
 
 **용도:**
 
 - Vite: React 같은 단일 페이지 애플리케이션 프레임워크를 위한 개발 환경을 제공합니다.
 
 - Webpack: 다양한 프로젝트 및 환경에 대해 유연하게 적용할 수 있습니다.
+
+### 레퍼런스
+---
+
+> <a href="https://kinsta.com/blog/vite-vs-webpack/">Vite vs Webpack</a>
+
+> <a href="https://blog.logrocket.com/vite-adoption-guide/#hot-module-replacement">Vite에서의 HMR</a>
 
 ### Vite를 사용한 이유
 ---
@@ -386,7 +415,7 @@ FILER : 서비스의 주요 기능입니다.
 
 - 사용자는 기존에 업로드 되어있는 파일에 업로드할 수 있고, 전 파일들을 클릭시 최신 버전과 비교하여 볼 수 있습니다.
 
-  - 최대 파일 사이즈는 30MB이며, 파일 타입은 bmp, csv, odt, doc, docx, gif, htm, html, jpg, jpeg, pdf, png, ppt, pptx, tiff, txt, xls, xlsx, mp4, webp 포맷만 업로드 가능합니다. 이 조건에 부합하지 않는 파일이 업로드 될 경우, 오류 메시지를 보여줍니다.
+  - 최대 파일 사이즈는 30MB이며, 파일 타입은 bmp, csv, odt, doc, docx, gif, jpg, jpeg, pdf, png, ppt, pptx, tiff, txt, xls, xlsx, mp4, webp 포맷만 업로드 가능합니다. 이 조건에 부합하지 않는 파일이 업로드 될 경우, 오류 메시지를 보여줍니다.
   - 다운로드를 클릭 시 해당 버전의 파일을 다운로드 할 수 있습니다.
 
 ### 2. 파일 및 폴더 권한 설정
@@ -449,13 +478,65 @@ React는 단방향 데이터 흐름을 따르는데, 이는 데이터의 흐름�
 
 클라이언트에서 파일 업로드 시 AWS S3에서 .ppt, .pptx, .xls, .xlsx 등의 파일들이 .zip파일로 저장되어 화면 렌더링 시 문제가 발생하였고, 사용자가 해당 파일을 다운로드 받을 때 손상된 파일이 다운 받아졌습니다.
 
-이 문제를 해결하기 위해 2가지 방법을 적용해보았습니다.
+이 문제를 해결하기 위해 2가지 방법을 시도 해 보았습니다.
+- 해결방법 1: 서버 측에서 adm-zip 라이브러리를 사용
+- 해결방법 2: multer와 multerS3 MIME 유형을 명시적으로 작성
 
-## 1. 1 서버 측에서 adm-zip 라이브러리를 사용
+## [해결방법 1]: 서버 측에서 adm-zip 라이브러리를 사용
+사용자가 원하는 파일을 화면에 렌더링 시키기 위해서는 해당 파일의 확장자를 알아야 했습니다. 하지만 .zip 파일을 직접적으로 화면에 렌더링하는 것은 일반적으로 지원되지 않기 때문에 .zip 파일을 렌더링 하기 위해 해당 파일을 해제한 후 내부의 컨텐츠를 화면에 표시해야 했습니다.
 
-### 서버측에서 압축 해제한 이유
+### adm-zip vs JSZip
+---
+파일 압축해제를 하기 위해 방법을 찾는 도중 adm-zip와 JSZip 라이브러리를 찾게 되었습니다.
 
-서버 측에서 파일을 압축 해제하거나 클라이언트 측에서 파일을 압축 해제하는 두 가지 방법에는 차이점이 있습니다.
+<div align="center">
+  <img width="300" src="public/adm_zip.png">
+  <img width="300" src="public/jszip.png">
+</div>
+
+***두 라이브러리의 장단점 비교***
+---
+### adm-zip 장점과 단점
+
+장점
+
+- Node.js 환경에서 주로 사용되며, 서버 측에서 .zip 파일을 처리하는 데 최적화되어 있습니다.
+- 파일 시스템에 직접 접근하여 .zip 파일을 압축 해제하고 압축하는 기능을 제공하여, 서버 측에서 파일 시스템에 직접 접근해야 할 때 유용합니다.
+- 비동기 처리를 지원하여 블로킹되지 않고 파일을 처리할 수 있습니다.
+- 파일 크기가 작아서 초기 로딩 시간이 짧아지고, 대역폭을 적게 사용합니다.
+
+단점
+
+- 브라우저 환경에서는 사용할 수 없어, 클라이언트 측에서는 사용할 수 없습니다.
+
+### JSZip 장점과 단점
+
+장점
+
+- 브라우저 환경에서 주로 사용되며, 클라이언트 측에서 .zip 파일을 처리하는 데 최적화되어 있습니다.
+- 브라우저의 File API와 호환되어 파일을 읽고 쓰는 작업을 수행할 수 있어, 웹 애플리케이션에서 동적으로 .zip 파일을 생성하거나 읽는 작업에 유용합니다.
+- 네트워크를 통해 .zip 파일을 다운로드하고 클라이언트 측에서 처리해야 할 때 유용합니다.
+
+단점
+
+- 서버 측에서 사용하기에는 적합하지 않으며, 주로 클라이언트 측에서만 사용됩니다.
+- 파일 크기가 크기 때문에 초기 로딩 시간이 길어질 수 있고, 대역폭을 많이 사용할 수 있습니다.
+
+
+### adm-zip 선택 이유
+---
+
+- 파일 시스템 접근: adm-zip은 파일 시스템에 직접 접근하여 .zip 파일을 압축 해제하는 기능을 제공합니다. 이는 서버 측에서 .zip 파일을 다운로드하고 압축 해제해야 하는 상황에서 유용합니다.
+
+- 비동기 처리 가능: adm-zip은 비동기적으로 파일을 처리할 수 있어, 서버가 다른 작업을 수행하거나 다중 요청을 처리하는 데 더욱 효율적입니다.
+
+- 파일 크기: adm-zip의 파일 크기가 작기 때문에 다운로드 및 압축 해제 과정이 빠르게 이루어질 수 있다고 생각하였습니다.
+
+> 따라서 파일을 서버 측에서 압축해제를 했기 때문에 adm-zip을 선택하게 되었습니다.
+
+### 파일을 왜 서버측에서 처리했을까?
+
+우선 서버 측에서 파일을 압축 해제 하는 방법과 클라이언트 측에서 파일을 압축 해제하는 방법에는 차이점이 있습니다.
 
 - 클라이언트의 컴퓨터 사양은 다양하며, 따라서 클라이언트 측에서 대용량 파일을 처리하는 것은 사용자의 디바이스에 따라 다른 문제를 일으킬 수 있습니다. 사용자의 디바이스가 처리 속도나 저장 용량이 부족할 경우 파일 처리 작업이 느려지거나 실패할 수 있습니다. 예를 들어, 일부 사용자의 컴퓨터는 처리 속도가 느리거나 저장 용량이 제한적일 수 있으며, 대용량 파일을 처리하는 동안 성능 저하가 발생할 수 있습니다.
 
@@ -467,7 +548,7 @@ React는 단방향 데이터 흐름을 따르는데, 이는 데이터의 흐름�
 
 ### 1. 2 multer와 multerS3 MIME 유형을 명시적으로 작성
 
-명시적으로 MIME 유형을 작성했을 때 의도치 않게 zip 형식으로 저장되는 문제는 해결되었지만, 확장성과 유지 보수성 면에서는 좋은 방식이라고 생각되지 않았습니다.
+문제 해결을 위해 MIME 유형을 명시적으로 작성하는 방법은 다음과 같습니다.
 ```jsx
 const s3Uploader = multer({
   storage: multerS3({
@@ -506,11 +587,103 @@ const s3Uploader = multer({
 
 - 실수 가능성: 변경 작업 중에 실수할 가능성이 있습니다. 파일 형식이나 MIME 유형을 명시적으로 작성할 때, 각 형식에 대한 정확한 MIME 유형을 인식하고 지정해야 합니다. 이는 실수할 가능성이 있는 작업이므로 실수를 방지하기 위해 주의가 필요합니다. 예를 들어, 잘못된 MIME 유형을 설정하거나, 새로운 형식을 누락할 수 있습니다. 이러한 실수는 애플리케이션의 정상 작동에 영향을 줄 수 있습니다.
 
-### [결론] : multerS3.AUTO_CONTENT_TYPE 사용
+### [결론]: multerS3.AUTO_CONTENT_TYPE 사용
 ---
+
 이러한 제약을 해결하기 위해 동적인 방식으로 MIME 유형을 처리할 수 있는 더 유연한 방법을 고려 하였습니다. `multerS3.AUTO_CONTENT_TYPE`을 사용하여 자동으로 MIME 유형을 설정하였습니다.
 
-또한, Multer-S3 라이브러리의 특성상 파일의 확장자를 정확히 감지하지 못할 수 있기 때문에, 확장자를 명시적으로 설정하고 MIME 유형을 정확하게 지정하기 위해 key 함수에 파일의 이름과 확장자를 명시적으로 작성했습니다. 이를 통해 AWS S3에서 파일을 오인식하여 .zip 형식으로 저장되는 문제를 해결할 수 있었습니다.
+```jsx
+const s3Uploader = multer({
+  storage: multerS3({
+    s3: s3client,
+    bucket: process.env.AWS_BUCKET,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    key: function (req, file, cb) {
+      const originalFilename = decodeURIComponent(file.originalname);
+
+      cb(null, Date.now().toString() + originalFilename);
+    },
+  }),
+});
+```
+
+`multerS3.AUTO_CONTENT_TYPE`은 파일의 내용을 분석하고 MIME 타입을 추론하기 때문에 확장자를 정확히 감지하지 못할 수 있습니다. MIME 유형을 정확하게 추론하기 위해 key 함수에 확장자명이 들어있는 `originalFilename`을 작성하여 MIME 타입 추론에 필요한 정보를 제공하였습니다.
+
+#### xlsx 파일을 업로드 시 객체 개요를 확인해 본 결과 MIME 타입이 정확하게 설정된 것을 확인하였습니다.
+
+<p align="center">
+  <img width="500" src="public/xlsx_object.png">
+</p>
+
+#### 하지만 신기하게도 해당 파일의 메타데이터는 zip파일로 인식되었습니다.
+
+<p align="center">
+  <img width="500" src="public/auto_content_type.png">
+</p>
+
+이 문제의 원인은 S3에 파일을 업로드할 때 설정된 Content-Type이 정확하지 않기 때문입니다. 일반적으로 `multerS3.AUTO_CONTENT_TYPE`을 사용하여 파일의 MIME 타입을 설정할 때, 확장자를 기반으로 MIME 타입을 추론합니다. 그러나 Microsoft Office 파일(예: .pptx, .xlsx)은 실제로 압축된 ZIP 형식의 파일 구조를 가지고 있기 때문에 이러한 파일들이 올바르게 인식되지 않을 수 있습니다.
+
+> 이 방법은 MIME 타입이 정확하기 때문에 렌더링 및 다운로드시 오류는 없었지만, 메타데이터가 정확하지 않아 사용하지 못 하였습니다.
+
+### [해결방법 4]: mime-types 라이브러리를 사용
+---
+
+### 왜 mime-types 라이브러리를 사용했는가?
+---
+
+파일의 MIME 타입을 올바르게 설정하는 것은 파일을 정확히 해석하고 적절하게 처리하는 데 매우 중요합니다. 특히 Microsoft Office 파일(예: .pptx, .xlsx)은 실제로 압축된 ZIP 형식의 파일 구조를 가지고 있기 때문에 자동으로 추론되는 MIME 타입이 부정확할 수 있습니다. 이를 해결하기 위해 mime-types 라이브러리를 사용하여 파일의 확장자를 기반으로 정확한 MIME 타입을 설정하였습니다.
+
+### `multerS3.AUTO_CONTENT_TYPE`의 문제점과 해결
+---
+
+`multerS3.AUTO_CONTENT_TYPE`은 파일 내용을 분석하여 MIME 타입을 추론하지만, 파일 내용 분석 과정에서 확장자만으로는 정확한 타입을 파악하지 못하는 경우가 발생합니다. 예를 들어, .xlsx 파일은 실제로는 ZIP 형식이기 때문에 application/zip으로 잘못 인식될 수 있습니다.
+
+이를 해결하기 위해 mime-types 라이브러리를 사용하여 파일의 확장자를 기반으로 MIME 타입을 추론하게 했습니다.
+
+```jsx
+const s3Uploader = multer({
+  storage: multerS3({
+    s3: s3client,
+    bucket: process.env.AWS_BUCKET,
+    contentType: (req, file, cb) => {
+      const contentType =
+        mime.lookup(file.originalname) || "application/octet-stream";
+      cb(null, contentType);
+    },
+    key: function (req, file, cb) {
+      const originalFilename = decodeURIComponent(file.originalname);
+
+      cb(null, Date.now().toString() + originalFilename);
+    },
+  }),
+});
+```
+
+### mime-types 라이브러리 사용의 장점
+---
+
+- 정확한 MIME 타입 설정: 파일의 확장자를 기반으로 MIME 타입을 설정하여 클라이언트가 파일을 정확히 해석하고 처리할 수 있습니다.
+
+- 객체 개요의 명확성: 파일 이름에 확장자를 포함하여 S3 객체 개요에서 파일의 유형을 쉽게 파악할 수 있습니다.
+신뢰성: mime-types 라이브러리를 사용하여 MIME 타입을 추론함으로써 잘못된 MIME 타입으로 인한 문제를 방지합니다.
+
+### mime-types 라이브러리 사용의 단점
+---
+
+- 추가 의존성: mime-types 라이브러리를 프로젝트에 추가해야 하며, 이는 프로젝트의 의존성을 늘릴 수 있습니다.
+
+### [결론]: mime-types 라이브러리 사용
+---
+<p align="center">
+  <img width="500" src="public/mime_lookup.png">
+</p>
+
+<p align="center">
+  mime-types 라이브러리를 사용결과 Content-Type이 올바르게 적용되었습니다.
+</p>
+
+> 이 방법은 파일의 확장자를 기반으로 정확한 MIME 타입을 설정하여 파일을 올바르게 해석하고 처리할 수 있도록 보장합니다. 또한, mime-types 라이브러리를 사용함으로써 잘못된 MIME 타입으로 인한 문제를 방지할 수 있습니다.
+> 그러므로 mime-types 라이브러리를 사용하여 MIME 유형을 설정하는 것이 가장 적합한 해결방법이라고 생각하였습니다.
 
 ### [회고]: 파일 업로드 및 다운로드 문제 해결을 통한 개발 경험 회고
 ---
@@ -521,7 +694,9 @@ const s3Uploader = multer({
 
 - 두 번째 시도에서는 multerS3 라이브러리를 사용하여 파일의 MIME 유형을 명시적으로 작성하는 방법을 시도했습니다. 하지만 이 방법은 확장성과 유지 보수성 측면에서 제약이 있었습니다. 변경 사항을 적용하는 데 시간이 걸리고, 실수할 가능성이 있기 때문에 이 방법을 선택하는 것은 적합하지 않았습니다.
 
-- 마지막으로, 동적인 방식으로 MIME 유형을 설정할 수 있는 multerS3.AUTO_CONTENT_TYPE 옵션을 사용하여 문제를 해결했습니다. 이를 통해 파일의 확장자를 명시적으로 설정하고 MIME 유형을 정확하게 지정할 수 있었습니다. 이러한 방법을 통해 AWS S3에서 파일이 오인식되어 손상되는 문제를 해결할 수 있었습니다.
+- 세 번째 시도에서는 동적인 방식으로 MIME 유형을 설정할 수 있는 multerS3.AUTO_CONTENT_TYPE 옵션을 사용과 `key`값에 확장자명을 작성하였습니다. 이를 통해 MIME 유형은 일치하였지만, 메타데이터의 `Content-Type`은 올바르게 적용되지 않아 이 방법을 선택하지 않았습니다.
+
+- 마지막 시도에서는 mime-types 라이브러리를 사용하여 파일의 확장자를 기반으로 정확한 MIME 타입을 설정하였습니다. 이를 통해 파일의 Content-Type이 올바르게 설정되었고, 렌더링 및 다운로드시 생긴 문제를 해결할 수 있었습니다.
 
 > 문제가 발생했을 때 빠르게 대응하고, 여러 가지 해결책을 시도해보며 문제의 원인을 파악하는 것이 중요하다는 것을 알게 되었습니다. 또한, 각 해결책의 장단점을 고려하여 최적의 방법을 선택하는 것이 필요하다는 것을 배웠습니다.
 
@@ -570,7 +745,11 @@ const s3Uploader = multer({
   storage: multerS3({
     s3: s3client,
     bucket: process.env.AWS_BUCKET,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
+    contentType: (req, file, cb) => {
+      const contentType =
+        mime.lookup(file.originalname) || "application/octet-stream";
+      cb(null, contentType);
+    },
     key: function (req, file, cb) {
       // 클라이언트 측에서 인코딩된 파일 이름을 디코딩하여 원래 파일 이름 복원
       const originalFilename = decodeURIComponent(file.originalname);
@@ -593,12 +772,14 @@ const s3Uploader = multer({
   storage: multerS3({
     s3: s3client,
     bucket: process.env.AWS_BUCKET,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
+    contentType: (req, file, cb) => {
+      const contentType =
+        mime.lookup(file.originalname) || "application/octet-stream";
+      cb(null, contentType);
+    },
     key: function (req, file, cb) {
-      // 클라이언트 측에서 querystring.escape로 인코딩된 파일 이름을 디코딩
       const originalFilename = querystring.unescape(file.originalname);
 
-      // 파일 이름에 타임스탬프를 추가하여 고유하게 생성
       cb(null, Date.now().toString() + originalFilename);
     },
   }),
@@ -610,7 +791,9 @@ module.exports = s3Uploader;
 
 ### [해결방법 3]: 정규식 사용하여 변환하기
 ---
+
 정규식을 사용하여 파일 이름을 커스텀하게 인코딩/디코딩하는 방법은 특정 요구사항에 맞춰 파일 이름을 변환할 수 있습니다.
+
 ```jsx
 // 커스텀 인코딩 함수
 function customEncode(fileName) {
@@ -630,12 +813,14 @@ const s3Uploader = multer({
   storage: multerS3({
     s3: s3client,
     bucket: process.env.AWS_BUCKET,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
+    contentType: (req, file, cb) => {
+      const contentType =
+        mime.lookup(file.originalname) || "application/octet-stream";
+      cb(null, contentType);
+    },
     key: function (req, file, cb) {
-      // 클라이언트 측에서 커스텀 인코딩된 파일 이름을 디코딩
       const originalFilename = customDecode(file.originalname);
 
-      // 파일 이름에 타임스탬프를 추가하여 고유하게 생성
       cb(null, Date.now().toString() + originalFilename);
     },
   }),
@@ -643,6 +828,7 @@ const s3Uploader = multer({
 
 module.exports = s3Uploader;
 ```
+
 이 코드에서는 클라이언트 측에서 파일 이름을 customEncode 함수로 인코딩한 후 서버로 전송하고, 서버 측에서 이를 customDecode 함수로 디코딩하여 파일 이름을 원래대로 복원합니다. 이를 통해 특수한 요구사항에 맞춘 파일 이름 변환을 처리할 수 있습니다.
 
 ***Node.js의 `querystring`, 정규식을 사용하지 않은 이유***
