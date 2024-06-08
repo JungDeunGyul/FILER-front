@@ -257,12 +257,16 @@ function Folder() {
   );
 
   if (!currentTeam) {
-    return <div>Loading...</div>;
+    return (
+      <div className="relative flex items-center justify-center h-screen w-full">
+        <p>Team not found</p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex h-screen">
-      <div className="w-1/4 bg-gray-100 p-4">
+    <div className="flex flex-col md:flex-row h-screen overflow-hidden">
+      <div className="md:w-1/6 bg-gray-100 p-4 overflow-auto">
         <div className="flex justify-between items-center mb-4">
           <div
             onClick={() => handleLeaveTeamClick(true)}
@@ -299,7 +303,7 @@ function Folder() {
                 onClick={(event) =>
                   handlePermissionClick(event, folder._id, "folder")
                 }
-                className="cursor-pointer py-2 px-3 rounded-md hover:bg-gray-200"
+                className="cursor-pointer px-3 py-2 rounded-md hover:bg-gray-200"
               >
                 <span className="text-gray-700">📁 {folder.name}</span>
               </li>
@@ -312,27 +316,25 @@ function Folder() {
           onDragStart={(event) => handleFileDragStart(event, "trash")}
           style={{ cursor: "pointer" }}
           draggable="true"
-          className="block w-full mt-4 py-2 px-3 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+          className="block w-full mt-4 px-3 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
         >
           🗑️ 휴지통
         </button>
       </div>
-      <div className="flex-grow p-4">
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <button
-              className="py-2 px-4 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-              onClick={() => navigate("/myteam")}
-            >
-              팀 목록
-            </button>
-            <button
-              className="px-4 py-2 text-lg bg-blue-500 text-white rounded mr-2"
-              onClick={() => handleCreateFolderClick()}
-            >
-              폴더 생성하기
-            </button>
-          </div>
+      <div className="flex-grow p-4 overflow-auto">
+        <div className="flex justify-between items-center mb-4">
+          <button
+            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            onClick={() => navigate("/myteam")}
+          >
+            팀 목록
+          </button>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            onClick={() => handleCreateFolderClick()}
+          >
+            폴더 생성하기
+          </button>
         </div>
         <DropZone
           teamId={currentTeam._id}
@@ -346,9 +348,9 @@ function Folder() {
             placeholder="폴더 / 파일 명을 입력하세요"
             value={filterValue}
             onChange={(event) => setFilterValue(event.target.value)}
-            className="block w-full py-2 px-3 border rounded-md mb-4"
+            className="block w-full px-3 py-2 border rounded-md mb-4"
           />
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {filteredFolders.map((folder) => (
               <div
                 key={folder._id}
@@ -359,29 +361,29 @@ function Folder() {
                 }}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={(event) => handleFolderDrop(event, folder._id)}
-                className="group relative cursor-pointer border border-gray-200 rounded-md p-4 hover:bg-gray-50"
+                className="group relative cursor-pointer border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-lg transition-shadow duration-200 transform hover:scale-105 bg-white"
               >
-                <span className="block mb-2 text-gray-600">
+                <span className="text-gray-600 block text-lg font-medium truncate">
                   📁 {folder.name}
                 </span>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
             {filteredFiles.map((file) => (
               <div
                 key={file._id}
                 draggable="true"
                 onDragStart={(event) => handleFileDragStart(event, file._id)}
-                className="group relative cursor-pointer border border-gray-200 rounded-md p-4 hover:bg-gray-50"
+                className="group relative cursor-pointer border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-lg transition-shadow duration-200 transform hover:scale-105 bg-white"
               >
                 <div onClick={() => handleFileClick(file._id)}>
                   <img
                     src={getFileIconUrl(file.type)}
                     alt={file.type}
-                    className="w-8 h-8 mr-2"
+                    className="w-12 h-12 mb-2 transition-transform duration-200 group-hover:scale-110"
                   />
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 block text-lg font-medium truncate">
                     {file.name.length > 20
                       ? `${file.name.substring(0, 20)}...`
                       : file.name}
@@ -389,7 +391,7 @@ function Folder() {
                   <DocViewerWrapper file={file} />
                 </div>
                 {selectedFile === file._id && (
-                  <div className="absolute top-0 right-0">
+                  <div className="absolute top-0 right-0 flex flex-col items-end space-y-2 p-2 bg-white rounded-lg shadow-lg">
                     <button
                       onClick={() =>
                         handleDownloadFile(
@@ -399,13 +401,13 @@ function Folder() {
                           currentUserRole,
                         )
                       }
-                      className="text-sm text-gray-600 mr-2"
+                      className="text-sm text-blue-600 hover:underline"
                     >
                       다운로드
                     </button>
                     <button
                       onClick={() => handleViewDetails(file)}
-                      className="text-sm text-gray-600 mr-2"
+                      className="text-sm text-blue-600 hover:underline"
                     >
                       자세히 보기
                     </button>
@@ -413,13 +415,13 @@ function Folder() {
                       onClick={(event) =>
                         handlePermissionClick(event, file._id, "file")
                       }
-                      className="text-sm text-gray-600 mr-2"
+                      className="text-sm text-blue-600 hover:underline"
                     >
                       권한 설정
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="text-sm text-gray-600 mr-2"
+                      className="text-sm text-blue-600 hover:underline"
                     >
                       취소
                     </button>

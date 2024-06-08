@@ -24,7 +24,7 @@ export const DocViewerWrapper = ({ file }) => {
   );
 
   return (
-    <div style={{ width: "270px", height: "200px" }}>
+    <div className="flex">
       <DocViewer {...docViewerProps} />
     </div>
   );
