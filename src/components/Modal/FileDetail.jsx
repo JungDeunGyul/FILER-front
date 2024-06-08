@@ -19,7 +19,7 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
   useEffect(() => {
     if (selectedFile) {
       const document = (
-        <div style={{ width: "100%", height: "80vh" }}>
+        <div className="flex">
           <DocViewer
             key={selectedFile.file._id}
             documents={[
@@ -76,7 +76,7 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
     const latestFileVersion = file.versions[file.versions.length - 1];
 
     return (
-      <div style={{ width: "100%", height: "80vh" }}>
+      <div className="w-full h-80vh">
         <DocViewer
           documents={[
             {
@@ -177,7 +177,6 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
                     onClick={() => handleFileClick(version)}
                     className="py-4 cursor-pointer hover:bg-gray-50 transition duration-300"
                   >
-                    {console.log(version)}
                     <div className="flex justify-between items-center">
                       <div>
                         <p

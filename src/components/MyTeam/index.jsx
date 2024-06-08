@@ -1,5 +1,4 @@
 import React from "react";
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "../store/userData";
@@ -37,7 +36,10 @@ function MyTeam() {
             className="w-full p-2 border rounded-md focus:outline-none focus:border-blue-500"
           />
         </div>
-        <div className="grid grid-cols-4 gap-4 p-5">
+        <div
+          className="grid grid-cols-4 gap-4 p-5"
+          style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}
+        >
           {filteredTeams.map((team) => (
             <div
               key={team._id}
