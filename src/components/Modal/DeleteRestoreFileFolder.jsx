@@ -14,27 +14,18 @@ export function DeleteRestoreFileFolder({
   const handleDeleteButton = async (event) => {
     event.preventDefault();
     try {
-      if (selectedType === "folder") {
-        const response = await axios.delete(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/trash/folder/${selectedElementId}/delete`,
-          { currentUserRole },
-        );
+      const url =
+        selectedType === "folder"
+          ? `/trash/folder/${selectedElementId}/delete`
+          : `/trash/file/${selectedElementId}/delete`;
 
-        setTrashBin(response.data.trashBin);
-        setDeleteRestoreFileFolderModalOpen(false);
-      } else if (selectedType === "file") {
-        const response = await axios.delete(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/trash/file/${selectedElementId}/delete`,
-          { currentUserRole },
-        );
+      const response = await axios.delete(
+        `${import.meta.env.VITE_SERVER_URL}${url}`,
+        { currentUserRole },
+      );
 
-        setTrashBin(response.data.trashBin);
-        setDeleteRestoreFileFolderModalOpen(false);
-      }
+      setTrashBin(response.data.trashBin);
+      setDeleteRestoreFileFolderModalOpen(false);
     } catch (error) {
       console.error(error);
     }
@@ -44,30 +35,19 @@ export function DeleteRestoreFileFolder({
     event.preventDefault();
     try {
       const userId = userData._id;
-      if (selectedType === "folder") {
-        const response = await axios.patch(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/restore/folder/${selectedElementId}`,
-          { currentUserRole, userId },
-        );
-        console.log(response.data.user);
+      const url =
+        selectedType === "folder"
+          ? `/restore/folder/${selectedElementId}`
+          : `/restore/file/${selectedElementId}`;
 
-        setTrashBin(response.data.trashBin);
-        setUserData(response.data.user);
-        setDeleteRestoreFileFolderModalOpen(false);
-      } else if (selectedType === "file") {
-        const response = await axios.patch(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/restore/file/${selectedElementId}`,
-          { currentUserRole, userId },
-        );
+      const response = await axios.patch(
+        `${import.meta.env.VITE_SERVER_URL}${url}`,
+        { currentUserRole, userId },
+      );
 
-        setTrashBin(response.data.trashBin);
-        setUserData(response.data.user);
-        setDeleteRestoreFileFolderModalOpen(false);
-      }
+      setTrashBin(response.data.trashBin);
+      setUserData(response.data.user);
+      setDeleteRestoreFileFolderModalOpen(false);
     } catch (error) {
       console.error(error);
     }
@@ -78,26 +58,32 @@ export function DeleteRestoreFileFolder({
   };
 
   return (
-    <div className="fixed w-4/6 h-4/6 z-10 bg-gray flex flex-col items-center justify-center p-4">
-      <div className="flex flex-col w-50 rounded-md items-center bg-white p-6">
-        <button
-          onClick={handleRestoreButton}
-          className="rounded-full bg-slate-900 text-white px-4 py-2"
-        >
-          복구하기
-        </button>
-        <button
-          onClick={handleDeleteButton}
-          className="rounded-md bg-gray-300 text-gray-800 px-3 py-1 mt-2"
-        >
-          삭제하기
-        </button>
-        <button
-          onClick={handleCloseButton}
-          className="rounded-md bg-gray-300 text-gray-800 px-3 py-1 mt-2"
-        >
-          취소하기
-        </button>
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div className="bg-white rounded-lg shadow-lg w-96 p-6 space-y-4">
+        <h2 className="text-xl font-semibold text-center">파일/폴더 관리</h2>
+        <p className="text-center text-gray-600">
+          선택한 항목을 복구하거나 삭제할 수 있습니다.
+        </p>
+        <div className="flex flex-col space-y-3">
+          <button
+            onClick={handleRestoreButton}
+            className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+          >
+            복구하기
+          </button>
+          <button
+            onClick={handleDeleteButton}
+            className="w-full py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
+          >
+            삭제하기
+          </button>
+          <button
+            onClick={handleCloseButton}
+            className="w-full py-2 px-4 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition duration-200"
+          >
+            취소하기
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -61,40 +61,40 @@ export function PermissionSetting({
 
   return (
     <div
-      className="fixed"
+      className="fixed z-50"
       style={{
         top: `${clickPosition.y}px`,
         left: `${clickPosition.x}px`,
       }}
     >
-      <div className="bg-white bg-opacity-40 rounded-md p-6 ">
+      <div className="bg-white shadow-lg rounded-lg p-6 space-y-4 transform transition-all duration-200">
         <button
           onClick={(event) => handlePermissionSettingButton(event, "팀장")}
-          className="block py-2 px-4 text-gray-800 bg-gray-200 rounded-md mb-2"
+          className="w-full py-2 px-4 text-gray-800 bg-blue-100 rounded-md hover:bg-blue-200 transition duration-200"
         >
           팀장
         </button>
         <button
           onClick={(event) => handlePermissionSettingButton(event, "팀원")}
-          className="block py-2 px-4 text-gray-800 bg-gray-200 rounded-md mb-2"
+          className="w-full py-2 px-4 text-gray-800 bg-blue-100 rounded-md hover:bg-blue-200 transition duration-200"
         >
           팀원
         </button>
         <button
           onClick={(event) => handlePermissionSettingButton(event, "수습")}
-          className="block py-2 px-4 text-gray-800 bg-gray-200 rounded-md mb-2"
+          className="w-full py-2 px-4 text-gray-800 bg-blue-100 rounded-md hover:bg-blue-200 transition duration-200"
         >
           수습
         </button>
         <button
           onClick={handleCloseButton}
-          className="block py-2 px-4 text-white bg-gray-500 rounded-md"
+          className="w-full py-2 px-4 text-white bg-red-500 rounded-md hover:bg-red-600 transition duration-200"
         >
           취소
         </button>
         {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
         {successMessage && (
-          <p className="text-blue-500 mt-2">{successMessage}</p>
+          <p className="text-green-500 mt-2">{successMessage}</p>
         )}
       </div>
     </div>
