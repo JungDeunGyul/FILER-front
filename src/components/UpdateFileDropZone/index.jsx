@@ -16,8 +16,6 @@ const UpdateFileDropZone = ({ fileId }) => {
     doc: "application/msword",
     docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     gif: "image/gif",
-    htm: "text/htm",
-    html: "text/html",
     jpg: "image/jpg",
     jpeg: "image/jpeg",
     pdf: "application/pdf",
@@ -43,10 +41,11 @@ const UpdateFileDropZone = ({ fileId }) => {
 
       const fileType = file.name.split(".").pop().toLowerCase();
       const fileMimeType = allowedFileTypes[fileType];
+
       if (fileMimeType !== undefined && file.type === fileMimeType) {
         return true;
       } else {
-        setErrorMessage(`허용되지 않은 파일 형식입니다: ${file.name}`);
+        setErrorMessage(`${fileType}은 허용되지 않은 파일 형식입니다.`);
         return false;
       }
     });
