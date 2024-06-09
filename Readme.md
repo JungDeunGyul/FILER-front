@@ -51,7 +51,6 @@
     - [[해결방법 2]: multer와 multerS3 MIME 유형을 명시적으로 작성](#해결방법-2-multer와-multers3-mime-유형을-명시적으로-작성)
       - [[제약사항]: MIME 유형을 명시적으로 작성 할 경우](#제약사항-mime-유형을-명시적으로-작성-할-경우)
     - [[해결방법 3]: multerS3.AUTO_CONTENT_TYPE, 명시적으로 확장자 입력](#해결방법-3-multers3auto_content_type-명시적으로-확장자-입력)
-    - [문제]
     - [[해결방법 4]: mime-types 라이브러리를 사용](#해결방법-4-mime-types-라이브러리를-사용)
       - [왜 mime-types 라이브러리를 사용했는가?](#왜-mime-types-라이브러리를-사용했는가)
       - [`multerS3.AUTO_CONTENT_TYPE`의 문제점과 해결](#multers3auto_content_type의-문제점과-해결)
