@@ -18,24 +18,24 @@ function ExploreTeam() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="flex flex-col items-center">
-        <h1 className="text-3xl font-semibold mb-10">팀 관리</h1>
-        <div className="flex gap-5">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex flex-col items-center bg-white p-10 rounded-lg shadow-xl">
+        <h1 className="text-3xl font-semibold mb-8 text-gray-800">팀 관리</h1>
+        <div className="flex gap-6">
           <button
-            className="px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 ease-in-out"
+            className="px-6 py-3 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition duration-300"
             onClick={() => navigate("/myteam")}
           >
             팀 페이지로 이동
           </button>
           <button
-            className="px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 ease-in-out"
+            className="px-6 py-3 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition duration-300"
             onClick={handleCreateTeam}
           >
             팀 생성하기
           </button>
           <button
-            className="px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 ease-in-out"
+            className="px-6 py-3 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition duration-300"
             onClick={handleFindTeam}
           >
             팀 찾기

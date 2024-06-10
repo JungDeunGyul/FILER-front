@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "../store/userData";
 
@@ -17,8 +16,8 @@ function MyTeam() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="w-4/6 h-5/6 bg-white shadow-lg rounded-md">
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="w-full md:w-4/6 h-5/6 bg-white shadow-lg rounded-md">
         <div className="flex justify-end p-5">
           <button
             className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
@@ -37,7 +36,7 @@ function MyTeam() {
           />
         </div>
         <div
-          className="grid grid-cols-4 gap-4 p-5"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5"
           style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}
         >
           {filteredTeams.map((team) => (
