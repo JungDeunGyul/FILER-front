@@ -18,7 +18,7 @@ function ExploreTeam() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center h-screen bg-gray-50">
       <div className="flex flex-col items-center bg-white p-10 rounded-lg shadow-xl">
         <h1 className="text-3xl font-semibold mb-8 text-gray-800">팀 관리</h1>
         <div className="flex gap-6">
