@@ -29,7 +29,7 @@ function Login() {
       );
 
       setUserData(res.data.user);
-      navigate("/Home");
+      navigate("/home");
     } catch (err) {
       console.error(err);
     }
