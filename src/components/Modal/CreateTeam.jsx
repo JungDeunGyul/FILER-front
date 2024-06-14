@@ -6,6 +6,7 @@ import useUserStore from "../store/userData";
 export function CreateTeam({ setCreateTeamModalOpen }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const createTeamInputRef = useRef(null);
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
 
     try {
       const teamName = createTeamInputRef.current.value;
@@ -36,6 +38,8 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
         setErrorMessage(
           "팀 이름은 3자 이상, 10자 이하이며 특수문자를 포함할 수 없습니다.",
         );
+
+        setLoading(false);
         return;
       }
 
@@ -47,20 +51,23 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
 
       if (response.status === 201) {
         setSuccessMessage(response.data.message);
-        setTimeout(() => {
-          setSuccessMessage("");
-          setCreateTeamModalOpen(false);
-          setUserData(response.data.updatedUser);
-          navigate("/myteam");
-        }, 3000);
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        setSuccessMessage("");
+        setCreateTeamModalOpen(false);
+        setUserData(response.data.updatedUser);
+        navigate("/myteam");
       }
     } catch (error) {
-      if (error.response.status === 404) {
+      if (error.response && error.response.status === 404) {
         setErrorMessage(error.response.data.message);
-        return;
+      } else {
+        setErrorMessage(error.response.data.message);
       }
-
-      console.error("Error submitting form:", error);
+    } finally {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      setLoading(false);
     }
   };
 
@@ -75,6 +82,7 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
             ref={createTeamInputRef}
             onChange={handleChange}
             className="border rounded-md p-3 mb-4 w-full"
+            disabled={loading}
           />
           <div className={`mb-10 h-32 overflow-hidden`}>
             {errorMessage && (
@@ -87,12 +95,14 @@ export function CreateTeam({ setCreateTeamModalOpen }) {
           <button
             type="submit"
             className="rounded-full bg-slate-900 text-white px-4 py-2"
+            disabled={loading}
           >
-            생성하기
+            {loading ? "생성 중..." : "생성하기"}
           </button>
           <button
             onClick={handleCloseModals}
             className="rounded-md bg-gray-300 text-gray-800 px-3 py-1 mt-2"
+            disabled={loading}
           >
             나가기
           </button>

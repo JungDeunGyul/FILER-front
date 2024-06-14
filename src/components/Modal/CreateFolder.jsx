@@ -10,6 +10,7 @@ export function CreateFolder({
 }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const createInputRef = useRef(null);
 
@@ -27,6 +28,7 @@ export function CreateFolder({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
 
     try {
       const folderName = createInputRef.current.value;
@@ -39,6 +41,8 @@ export function CreateFolder({
         setErrorMessage(
           "폴더 이름은 3자 이상, 10자 이하이며 특수문자를 포함할 수 없습니다.",
         );
+
+        setLoading(false);
         return;
       }
 
@@ -49,11 +53,12 @@ export function CreateFolder({
         );
 
         setSuccessMessage("성공적으로 폴더가 만들어졌습니다!");
-        setTimeout(() => {
-          setSuccessMessage("");
-          setFolder(response.data.folder);
-          setCreateFolderModalOpen(false);
-        }, 2000);
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        setSuccessMessage("");
+        setFolder(response.data.folder);
+        setCreateFolderModalOpen(false);
 
         return;
       }
@@ -67,26 +72,31 @@ export function CreateFolder({
 
       if (response.status === 201) {
         setSuccessMessage("성공적으로 폴더가 만들어졌습니다!");
-        setTimeout(() => {
-          setSuccessMessage("");
-          setUserData(response.data.updatedUser);
-          setCreateFolderModalOpen(false);
-        }, 2000);
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        setSuccessMessage("");
+        setUserData(response.data.updatedUser);
+        setCreateFolderModalOpen(false);
       }
     } catch (error) {
       if (error.response.status === 404) {
         setErrorMessage(error.response.data.message);
-        setTimeout(() => {
-          setErrorMessage("");
-          setCreateFolderModalOpen(false);
-        }, 2000);
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        setErrorMessage("");
+        setCreateFolderModalOpen(false);
+
         return;
       } else if (error.response.status === 412) {
         setErrorMessage(error.response.data.message);
-        setTimeout(() => {
-          setErrorMessage("");
-          setCreateFolderModalOpen(false);
-        }, 2000);
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        setErrorMessage("");
+        setCreateFolderModalOpen(false);
+
         return;
       }
 
@@ -105,6 +115,7 @@ export function CreateFolder({
             ref={createInputRef}
             onChange={handleChange}
             className="border rounded-md p-3 mb-4 w-full"
+            disabled={loading}
           />
           <div className={`mb-10 h-32 overflow-hidden`}>
             {errorMessage && (
@@ -117,8 +128,9 @@ export function CreateFolder({
           <button
             type="submit"
             className="rounded-full bg-slate-900 text-white px-4 py-2"
+            disabled={loading}
           >
-            만들기
+            {loading ? "폴더 생성중..." : "폴더 생성하기"}
           </button>
           <button
             onClick={handleCloseModals}
