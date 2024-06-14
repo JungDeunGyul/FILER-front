@@ -7,6 +7,8 @@ const UpdateFileDropZone = ({ fileId }) => {
   const { userData, setUserData } = useUserStore();
   const [files, setFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   const MAX_FILE_SIZE_MB = 30;
   const allowedFileTypes = {
@@ -49,6 +51,7 @@ const UpdateFileDropZone = ({ fileId }) => {
         return false;
       }
     });
+
     setFiles(filteredFiles);
   }, []);
 
@@ -56,6 +59,13 @@ const UpdateFileDropZone = ({ fileId }) => {
 
   const handleUpload = async () => {
     try {
+      if (uploading) {
+        return;
+      }
+
+      setUploading(true);
+      setUploadSuccess(false);
+
       const userId = userData._id;
       const formData = new FormData();
       files.forEach((file) => {
@@ -70,20 +80,26 @@ const UpdateFileDropZone = ({ fileId }) => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            files,
           },
         },
       );
 
       setUserData(response.data.user);
       setFiles([]);
+      setErrorMessage("");
+      setUploadSuccess(true);
     } catch (error) {
-      console.error("Error uploading files:", error);
+      setErrorMessage("파일 업로드 중 오류가 발생했습니다.");
+      setFiles([]);
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleCloseUpload = () => {
     setFiles([]);
+    setErrorMessage("");
+    setUploadSuccess(false);
   };
 
   return (
@@ -97,6 +113,11 @@ const UpdateFileDropZone = ({ fileId }) => {
         <p>업데이트 할 파일을 넣어주세요</p>
       </div>
       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+      {uploadSuccess && (
+        <p className="text-green-500 mt-2">
+          파일이 성공적으로 업로드 되었습니다.
+        </p>
+      )}
       {files.length > 0 && (
         <div className="mt-2">
           <ul>
@@ -110,9 +131,12 @@ const UpdateFileDropZone = ({ fileId }) => {
           <div className="mt-2">
             <button
               onClick={handleUpload}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mr-2 rounded"
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mr-2 rounded ${
+                uploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={uploading}
             >
-              Upload
+              {uploading ? "업로드 중..." : "Upload"}
             </button>
             <button
               onClick={handleCloseUpload}
