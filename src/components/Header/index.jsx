@@ -56,7 +56,7 @@ function Header() {
     <header className="flex justify-between items-center bg-gray-800 text-white py-4 px-8">
       <div
         className="flex items-center cursor-pointer"
-        onClick={() => navigate("/Home")}
+        onClick={() => navigate("/home")}
       >
         <img src="/FilerLoGo.png" className="h-10 w-10" alt="Filer Logo" />
         <h1 className="ml-4 text-lg font-semibold">Filer</h1>
