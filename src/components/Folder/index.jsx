@@ -266,7 +266,10 @@ function Folder() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-      <div className="md:w-1/6 bg-gray-100 p-4 overflow-auto">
+      <div
+        className="bg-gray-100 p-4 overflow-auto flex-shrink-0"
+        style={{ flexBasis: "16.6667%", minWidth: "16.6667%" }}
+      >
         <div className="flex justify-between items-center mb-4">
           <div
             onClick={() => handleLeaveTeamClick(true)}
