@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../../utils/firebase";
 import useUserStore from "../store/userData";
-
+import ImagePlaceholder from "../ImagePlaceholder";
 import axios from "axios";
 
 function Login() {
@@ -36,16 +36,14 @@ function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <img src="/FilerLoGo.png" alt="logo" />
-      <div>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
-          onClick={handleLogin}
-        >
-          Sign in With Google
-        </button>
-      </div>
+    <div className="flex flex-col items-center justify-center h-screen p-4">
+      <ImagePlaceholder src="/FilerLoGo.png" alt="logo" />
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+        onClick={handleLogin}
+      >
+        Sign in with Google
+      </button>
     </div>
   );
 }
