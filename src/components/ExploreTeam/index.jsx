@@ -1,20 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { CreateTeam } from "../Modal/CreateTeam";
-import { FindTeam } from "../Modal/FindTeam";
+import { TeamFormModal } from "../Modal/TeamFormModal";
 
 function ExploreTeam() {
-  const [isCreateTeamModalOpen, setCreateTeamModalOpen] = useState(false);
-  const [isFindTeamModalOpen, setFindTeamModalOpen] = useState(false);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [isCreateMode, setIsCreateMode] = useState(false);
   const navigate = useNavigate();
 
-  const handleCreateTeam = () => {
-    setCreateTeamModalOpen(true);
-  };
-
-  const handleFindTeam = () => {
-    setFindTeamModalOpen(true);
+  const handleOpenModal = (isCreateMode) => {
+    setIsCreateMode(isCreateMode);
+    setModalOpen(true);
   };
 
   return (
@@ -30,26 +26,24 @@ function ExploreTeam() {
           </button>
           <button
             className="px-6 py-3 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition duration-300"
-            onClick={handleCreateTeam}
+            onClick={() => handleOpenModal(true)}
           >
             팀 생성하기
           </button>
           <button
             className="px-6 py-3 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition duration-300"
-            onClick={handleFindTeam}
+            onClick={() => handleOpenModal(false)}
           >
             팀 찾기
           </button>
         </div>
       </div>
-      {isCreateTeamModalOpen && (
+      {isModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
-          <CreateTeam setCreateTeamModalOpen={setCreateTeamModalOpen} />
-        </div>
-      )}
-      {isFindTeamModalOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
-          <FindTeam setFindTeamModalOpen={setFindTeamModalOpen} />
+          <TeamFormModal
+            setModalOpen={setModalOpen}
+            isCreateMode={isCreateMode}
+          />
         </div>
       )}
     </div>
