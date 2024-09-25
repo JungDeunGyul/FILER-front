@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+import Sidebar from "../Sidebar";
+import FileGrid from "../FileGrid";
+import FolderGrid from "../FolderGird";
+import FolderAndTeamListButtons from "../FolderAndTeamListButtons";
+
 import { CreateFolder } from "../Modal/CreateFolder";
 import { LeaveTeam } from "../Modal/LeaveTeam";
 import { FileDetail } from "../Modal/FileDetail";
@@ -8,9 +13,7 @@ import { PermissionSetting } from "../Modal/PermissionSetting";
 import { FolderAccess } from "../Modal/FolderAccess";
 import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
 
-import { getFileIconUrl } from "../../utils/fileIconURL";
 import { handleDownloadFile } from "../../utils/downloadFile";
-import { DocViewerWrapper } from "../../utils/docViewerWrapper";
 
 import DropZone from "../DropZone";
 import useUserStore from "../store/userData";
@@ -239,76 +242,22 @@ function Team() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
-      <div
-        className="bg-gray-100 p-4 overflow-auto flex-shrink-0"
-        style={{ flexBasis: "16.6667%", minWidth: "16.6667%" }}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <div
-            onClick={() => handleLeaveTeamClick(true)}
-            className="text-xl font-bold cursor-pointer"
-          >
-            {currentTeam.name}
-          </div>
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={handleTeamMemberClick}
-          >
-            {currentTeam.members.slice(0, 3).map((user) => (
-              <img
-                key={user._id}
-                src={user.user.iconpath}
-                className="w-8 h-8 rounded-full ml-1"
-                alt="user icon"
-              />
-            ))}
-            {currentTeam.members.length > 3 && (
-              <div className="ml-1">+{currentTeam.members.length - 3}</div>
-            )}
-          </div>
-        </div>
-        <ul>
-          {currentTeam.ownedFolders.map((folder) => (
-            <li
-              key={folder._id}
-              onDragStart={(event) => handleFolderDragStart(event, folder._id)}
-              draggable="true"
-              onClick={(event) =>
-                handlePermissionClick(event, folder._id, "folder")
-              }
-              className="cursor-pointer px-3 py-2 rounded-md hover:bg-gray-200"
-            >
-              <span className="text-gray-700">📁 {folder.name}</span>
-            </li>
-          ))}
-        </ul>
-        <button
-          onClick={handleClickTrashBin}
-          onDragOver={handleTrashDragOver}
-          onDrop={handleTrashDrop}
-          onDragStart={(event) => handleFileDragStart(event, "trash")}
-          style={{ cursor: "pointer" }}
-          draggable="true"
-          className="block w-full mt-4 px-3 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-        >
-          🗑️ 휴지통
-        </button>
-      </div>
+      <Sidebar
+        currentTeam={currentTeam}
+        handleLeaveTeamClick={handleLeaveTeamClick}
+        handleTeamMemberClick={handleTeamMemberClick}
+        handlePermissionClick={handlePermissionClick}
+        handleFolderDragStart={handleFolderDragStart}
+        handleClickTrashBin={handleClickTrashBin}
+        handleTrashDragOver={handleTrashDragOver}
+        handleTrashDrop={handleTrashDrop}
+        handleFileDragStart={handleFileDragStart}
+      />
       <div className="flex-grow p-4 overflow-auto">
-        <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => navigate("/myteam")}
-            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-          >
-            팀 목록
-          </button>
-          <button
-            onClick={handleCreateFolderClick}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          >
-            폴더 생성하기
-          </button>
-        </div>
+        <FolderAndTeamListButtons
+          onNavigate={() => navigate("/myteam")}
+          onCreateFolder={handleCreateFolderClick}
+        />
         <DropZone teamId={currentTeam._id} userId={userData._id} />
         <div className="relative mt-2">
           <input
@@ -318,88 +267,24 @@ function Team() {
             onChange={(event) => setFilterValue(event.target.value)}
             className="block w-full px-3 py-2 border rounded-md mb-4"
           />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {filteredFolders.map((folder) => (
-              <div
-                key={folder._id}
-                onDragStart={(event) =>
-                  handleFolderDragStart(event, folder._id)
-                }
-                draggable="true"
-                onClick={() => handleFolderClick(folder._id, folder.visibleTo)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={(event) => handleFolderDrop(event, folder._id)}
-                className="group relative cursor-pointer border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-lg transition-shadow duration-200 transform hover:scale-105 bg-white"
-              >
-                <span className="text-gray-600 block text-lg font-medium truncate">
-                  📁 {folder.name}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
-            {filteredFiles.map((file) => (
-              <div
-                key={file._id}
-                className="group relative cursor-pointer border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-lg transition-shadow duration-200 transform hover:scale-105 bg-white"
-              >
-                <div
-                  onClick={() => handleFileClick(file._id)}
-                  onDragStart={(event) => handleFileDragStart(event, file._id)}
-                  draggable="true"
-                >
-                  <img
-                    src={getFileIconUrl(file.type)}
-                    alt={file.type}
-                    className="w-12 h-12 mb-2 transition-transform duration-200 group-hover:scale-110"
-                  />
-                  <span className="text-gray-600 block text-lg font-medium truncate">
-                    {file.name.length > 20
-                      ? `${file.name.substring(0, 20)}...`
-                      : file.name}
-                  </span>
-                  <DocViewerWrapper file={file} />
-                </div>
-                {selectedFile === file._id && (
-                  <div className="absolute top-0 right-0 flex flex-col items-end space-y-2 p-2 bg-white rounded-lg shadow-lg">
-                    <button
-                      onClick={() =>
-                        handleDownloadFile(
-                          teamId,
-                          file._id,
-                          file.name,
-                          currentUserRole,
-                        )
-                      }
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      다운로드
-                    </button>
-                    <button
-                      onClick={() => handleViewDetails(file)}
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      자세히 보기
-                    </button>
-                    <button
-                      onClick={(event) =>
-                        handlePermissionClick(event, file._id, "file")
-                      }
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      권한 설정
-                    </button>
-                    <button
-                      onClick={handleCancel}
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      취소
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <FolderGrid
+            filteredFolders={filteredFolders}
+            handleFolderDragStart={handleFolderDragStart}
+            handleFolderClick={handleFolderClick}
+            handleFolderDrop={handleFolderDrop}
+          />
+          <FileGrid
+            filteredFiles={filteredFiles}
+            handleFileDragStart={handleFileDragStart}
+            handleFileClick={handleFileClick}
+            selectedFile={selectedFile}
+            handleDownloadFile={handleDownloadFile}
+            handleViewDetails={handleViewDetails}
+            handlePermissionClick={handlePermissionClick}
+            handleCancel={handleCancel}
+            teamId={teamId}
+            currentUserRole={currentUserRole}
+          />
         </div>
       </div>
       {isCreateFolderModalOpen && (
