@@ -4,15 +4,14 @@ const FolderGrid = ({
   handleFolderClick,
   handleFolderDrop,
 }) => {
-  console.log(filteredFolders);
   return (
     <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
       {filteredFolders.map((folder) => (
         <div
           role="folder"
           key={folder._id}
-          onDragStart={(event) => handleFolderDragStart(event, folder._id)}
           draggable="true"
+          onDragStart={(event) => handleFolderDragStart(event, folder._id)}
           onClick={() => {
             handleFolderClick(folder._id, folder.visibleTo);
           }}
