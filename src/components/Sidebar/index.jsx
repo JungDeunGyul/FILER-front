@@ -1,5 +1,6 @@
 const Sidebar = ({
   currentTeam,
+  filteredFolders,
   handleLeaveTeamClick,
   handleTeamMemberClick,
   handlePermissionClick,
@@ -39,7 +40,7 @@ const Sidebar = ({
         </div>
       </div>
       <ul>
-        {currentTeam.ownedFolders.map((folder) => (
+        {filteredFolders.map((folder) => (
           <li
             key={folder._id}
             onDragStart={(event) => handleFolderDragStart(event, folder._id)}
