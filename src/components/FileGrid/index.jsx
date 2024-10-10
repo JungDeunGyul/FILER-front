@@ -21,14 +21,10 @@ const FileGrid = ({
           key={file._id}
           draggable="true"
           onDragStart={(event) => handleFileDragStart(event, file._id)}
-          className="group relative cursor-pointer border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-lg transition-shadow duration-200 transform hover:scale-105 bg-white"
+          className="group relative cursor-pointer border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 transform hover:scale-105 bg-white aspect-[1/1]"
         >
-          <div onClick={() => handleFileClick(file._id)}>
-            <img
-              src={getFileIconUrl(file.type)}
-              alt={file.type}
-              className="w-12 h-12 mb-2 transition-transform duration-200 group-hover:scale-110"
-            />
+          <div className="h-full p-4" onClick={() => handleFileClick(file._id)}>
+            <img src={getFileIconUrl(file.type)} alt={file.type} />
             <span className="text-gray-600 block text-lg font-medium truncate">
               {file.name.length > 20
                 ? `${file.name.substring(0, 20)}...`
