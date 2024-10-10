@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import useUserStore from "../store/userData";
 import axios from "axios";
 
-const DropZone = ({ teamId, userId, folderId, setFolder }) => {
+const DropZone = ({ teamId, userId, folderId, fileId, setFolder }) => {
   const { setUserData } = useUserStore();
   const [files, setFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -71,8 +71,22 @@ const DropZone = ({ teamId, userId, folderId, setFolder }) => {
         formData.append("file", file, encodeURIComponent(file.name));
       });
 
-      if (folderId) {
-        const response = await axios.post(
+      let response;
+
+      if (fileId) {
+        response = await axios.patch(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/file/${fileId}/updatefile/${userId}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
+      } else if (folderId) {
+        response = await axios.post(
           `${
             import.meta.env.VITE_SERVER_URL
           }/file/${folderId}/uploadfile/${userId}`,
@@ -80,37 +94,32 @@ const DropZone = ({ teamId, userId, folderId, setFolder }) => {
           {
             headers: {
               "Content-Type": "multipart/form-data",
-              files,
             },
           },
         );
-
         setFolder(response.data.folder);
-        setFiles([]);
-        setUploadSuccess(true);
-
-        return;
+      } else if (teamId) {
+        response = await axios.post(
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/team/${teamId}/uploadfile/${userId}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
       }
 
-      const response = await axios.post(
-        `${
-          import.meta.env.VITE_SERVER_URL
-        }/team/${teamId}/uploadfile/${userId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            files,
-          },
-        },
-      );
-
-      setUserData(response.data.updatedUser);
-      setFiles([]);
-      setErrorMessage("");
-      setUploadSuccess(true);
+      if (response) {
+        setUserData(response.data.updatedUser || response.data.user);
+        setFiles([]);
+        setUploadSuccess(true);
+      }
     } catch (error) {
       console.error("Error uploading files:", error);
+      setErrorMessage("파일 업로드 중 오류가 발생했습니다.");
     } finally {
       setUploading(false);
     }
@@ -130,7 +139,11 @@ const DropZone = ({ teamId, userId, folderId, setFolder }) => {
     >
       <div {...getRootProps()}>
         <input {...getInputProps()} />
-        <p>클릭 혹은 파일을 이곳에 드롭하세요</p>
+        <p>
+          {fileId
+            ? "업데이트 할 파일을 넣어주세요"
+            : "클릭 혹은 파일을 이곳에 드롭하세요"}
+        </p>
       </div>
       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
       {uploadSuccess && (
