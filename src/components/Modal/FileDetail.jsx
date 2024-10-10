@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import UpdateFileDropZone from "../UpdateFileDropZone";
+import DropZone from "../DropZone";
 import { handleDownloadFile } from "../../utils/downloadFile";
 import useUserStore from "../store/userData";
 import axios from "axios";
@@ -153,7 +153,7 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
         className="bg-white w-11/12 md:max-w-4xl mx-auto rounded shadow-lg z-50 overflow-y-auto"
         style={{ width: "90%", maxWidth: "1200px" }}
       >
-        <UpdateFileDropZone fileId={file._id} />
+        <DropZone userId={userData._id} fileId={file._id} />
         <div className="flex justify-end p-4">
           <button
             className="text-gray-600 hover:text-gray-800"
