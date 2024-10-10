@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import Sidebar from "../Sidebar";
 import FileGrid from "../FileGrid";
-import FolderGrid from "../FolderGird";
+import FolderGrid from "../FolderGrid";
 import FolderAndTeamListButtons from "../FolderAndTeamListButtons";
 
+import { scrollHandler } from "../../utils/scrollHandler";
 import { CreateFolder } from "../Modal/CreateFolder";
 import { LeaveTeam } from "../Modal/LeaveTeam";
 import { FileDetail } from "../Modal/FileDetail";
@@ -42,6 +43,10 @@ function Folder() {
   const [selectedElementId, setSelectedElementId] = useState("");
   const [selectedType, setSelectedType] = useState("");
 
+  const [filesToShow, setFilesToShow] = useState(12);
+  const scrollContainerRef = useRef(null);
+  const handleScroll = scrollHandler(scrollContainerRef, setFilesToShow);
+
   useEffect(() => {
     const team = userData.teams.find((team) => team._id === teamId);
 
@@ -56,7 +61,7 @@ function Folder() {
       const currentUserRole = currentUser ? currentUser.role : "";
       setUserRole(currentUserRole);
     }
-  }, [userData.teams, teamId, currentTeam]);
+  }, [userData.teams, teamId, currentTeam, userData.nickname]);
 
   useEffect(() => {
     if (currentTeam) {
@@ -85,6 +90,20 @@ function Folder() {
     }
   };
 
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [handleScroll]);
+
   const filteredFolders = useMemo(() => {
     return folderData && folderData.subFolders
       ? folderData.subFolders.filter((folder) =>
@@ -92,6 +111,8 @@ function Folder() {
         )
       : [];
   }, [folderData, filterValue]);
+
+  console.log(filteredFolders);
 
   const filteredFiles = useMemo(() => {
     return folderData && folderData.files
@@ -271,6 +292,7 @@ function Folder() {
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
       <Sidebar
         currentTeam={currentTeam}
+        filteredFolders={filteredFolders}
         handleLeaveTeamClick={handleLeaveTeamClick}
         handleTeamMemberClick={handleTeamMemberClick}
         handlePermissionClick={handlePermissionClick}
@@ -280,7 +302,7 @@ function Folder() {
         handleTrashDrop={handleTrashDrop}
         handleFileDragStart={handleFileDragStart}
       />
-      <div className="flex-grow p-4 overflow-auto">
+      <div ref={scrollContainerRef} className="flex-grow p-4 overflow-auto">
         <FolderAndTeamListButtons
           onNavigate={() => navigate("/myteam")}
           onCreateFolder={handleCreateFolderClick}
@@ -306,7 +328,7 @@ function Folder() {
             handleFolderDrop={handleFolderDrop}
           />
           <FileGrid
-            filteredFiles={filteredFiles}
+            filteredFiles={filteredFiles.slice(0, filesToShow)}
             handleFileDragStart={handleFileDragStart}
             handleFileClick={handleFileClick}
             selectedFile={selectedFile}
