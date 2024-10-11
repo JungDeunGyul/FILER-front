@@ -24,8 +24,15 @@ export const DocViewerWrapper = ({ file }) => {
   );
 
   return (
-    <div className="flex h-52">
-      <DocViewer {...docViewerProps} style={{ width: "100%" }} />
+    <div>
+      <DocViewer
+        {...docViewerProps}
+        style={{
+          width: "100%",
+          height: "auto",
+          maxHeight: "208px",
+        }}
+      />
     </div>
   );
 };

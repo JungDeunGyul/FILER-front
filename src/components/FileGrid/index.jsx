@@ -23,7 +23,10 @@ const FileGrid = ({
           onDragStart={(event) => handleFileDragStart(event, file._id)}
           className="group relative cursor-pointer border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 transform hover:scale-105 bg-white aspect-[1/1]"
         >
-          <div className="h-full p-4" onClick={() => handleFileClick(file._id)}>
+          <div
+            className="h-full p-4 overflow-hidden"
+            onClick={() => handleFileClick(file._id)}
+          >
             <img src={getFileIconUrl(file.type)} alt={file.type} />
             <span className="text-gray-600 block text-lg font-medium truncate">
               {file.name.length > 20
