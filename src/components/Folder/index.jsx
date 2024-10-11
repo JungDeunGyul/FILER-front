@@ -112,8 +112,6 @@ function Folder() {
       : [];
   }, [folderData, filterValue]);
 
-  console.log(filteredFolders);
-
   const filteredFiles = useMemo(() => {
     return folderData && folderData.files
       ? folderData.files.filter((file) =>
