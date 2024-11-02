@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Header from "./Header";
 import Home from "./Home";
 import ExploreTeam from "./ExploreTeam";
@@ -8,11 +9,17 @@ import Login from "./Login";
 import Team from "./Team";
 import Folder from "./Folder";
 import TrashBin from "./TrashBin";
-
-import useUserStore from "./store/userData";
+import { fetchUserData } from "../utils/api/fetchUserData";
 
 function App() {
-  const { userData } = useUserStore();
+  const [userId, setUserId] = useState(null);
+
+  const { data: userData } = useQuery({
+    queryKey: ["userData"],
+    queryFn: () => fetchUserData(userId),
+    enabled: !!userId,
+    retry: false,
+  });
 
   return (
     <div>
@@ -21,7 +28,13 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={userData ? <Navigate to="/home" /> : <Login />}
+            element={
+              userData ? (
+                <Navigate to="/home" />
+              ) : (
+                <Login setUserId={setUserId} />
+              )
+            }
           />
           <Route
             path="/home"
