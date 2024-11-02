@@ -18,6 +18,8 @@ export const useLoginUser = (navigate, setUserId) => {
     onSuccess: (data) => {
       const userId = data._id;
 
+      sessionStorage.setItem("userId", userId);
+
       setUserId(userId);
       navigate("/home");
     },
