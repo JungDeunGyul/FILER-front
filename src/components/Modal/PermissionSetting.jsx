@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import useUserStore from "../store/userData";
-import axios from "axios";
+
+import { useUpdateFileFolderPermission } from "../../utils/api/updateFileFolderPermission";
 
 export function PermissionSetting({
   setPermissionModalOpen,
@@ -8,12 +8,20 @@ export function PermissionSetting({
   selectedType,
   currentUserRole,
   clickPosition,
+  queryClient,
+  userData,
 }) {
-  const { userData, setUserData } = useUserStore();
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handlePermissionSettingButton = async (event, selectedRole) => {
+  const updateFileFolderPermissionMutation = useUpdateFileFolderPermission(
+    queryClient,
+    setPermissionModalOpen,
+    setSuccessMessage,
+    setErrorMessage,
+  );
+
+  const handlePermissionSettingButton = (event, selectedRole) => {
     event.preventDefault();
 
     if (currentUserRole !== "팀장") {
@@ -30,29 +38,12 @@ export function PermissionSetting({
         ? `/folder/permission/${selectedElementId}`
         : `/file/permission/${selectedElementId}`;
 
-    try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_SERVER_URL}${url}`,
-        { currentUserRole, selectedRole, userId },
-      );
-
-      const { status, data } = response;
-
-      if (status === 201) {
-        setSuccessMessage(data.message);
-        setUserData(data.user);
-      } else {
-        setErrorMessage(data.message);
-      }
-
-      setTimeout(() => {
-        setErrorMessage("");
-        setSuccessMessage("");
-        setPermissionModalOpen(false);
-      }, 2000);
-    } catch (error) {
-      console.error(error);
-    }
+    updateFileFolderPermissionMutation.mutate({
+      url,
+      currentUserRole,
+      selectedRole,
+      userId,
+    });
   };
 
   const handleCloseButton = () => {
