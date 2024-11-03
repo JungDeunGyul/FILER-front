@@ -1,20 +1,26 @@
 import React, { useState, useRef } from "react";
-import axios from "axios";
-import useUserStore from "../store/userData";
+import { useCreateFolder } from "../../utils/api/createFolder";
 
 export function CreateFolder({
   setCreateFolderModalOpen,
   teamName,
+  queryClient,
+  userData,
   folderId,
-  setFolder,
 }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const createFolderMutation = useCreateFolder(
+    queryClient,
+    setSuccessMessage,
+    setErrorMessage,
+    setLoading,
+    setCreateFolderModalOpen,
+    folderId,
+  );
 
   const createInputRef = useRef(null);
-
-  const { userData, setUserData } = useUserStore();
 
   const handleCloseModals = () => {
     setCreateFolderModalOpen(false);
@@ -26,82 +32,29 @@ export function CreateFolder({
     }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
     setLoading(true);
 
-    try {
-      const folderName = createInputRef.current.value;
+    const userId = userData._id;
+    const folderName = createInputRef.current.value;
 
-      if (
-        folderName.length < 3 ||
-        folderName.length > 10 ||
-        /[!@#$%^&*(),.?":{}|<>]/.test(folderName)
-      ) {
-        setErrorMessage(
-          "폴더 이름은 3자 이상, 10자 이하이며 특수문자를 포함할 수 없습니다.",
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      if (folderId) {
-        const response = await axios.post(
-          `${import.meta.env.VITE_SERVER_URL}/folder/${folderId}/new`,
-          { folderName, teamName },
-        );
-
-        setSuccessMessage("성공적으로 폴더가 만들어졌습니다!");
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        setSuccessMessage("");
-        setFolder(response.data.folder);
-        setCreateFolderModalOpen(false);
-
-        return;
-      }
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/createfolder/${
-          userData._id
-        }`,
-        { folderName },
+    if (
+      folderName.length < 3 ||
+      folderName.length > 10 ||
+      /[!@#$%^&*(),.?":{}|<>]/.test(folderName)
+    ) {
+      setErrorMessage(
+        "폴더 이름은 3자 이상, 10자 이하이며 특수문자를 포함할 수 없습니다.",
       );
 
-      if (response.status === 201) {
-        setSuccessMessage("성공적으로 폴더가 만들어졌습니다!");
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        setSuccessMessage("");
-        setUserData(response.data.updatedUser);
-        setCreateFolderModalOpen(false);
-      }
-    } catch (error) {
-      if (error.response.status === 404) {
-        setErrorMessage(error.response.data.message);
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        setErrorMessage("");
-        setCreateFolderModalOpen(false);
-
-        return;
-      } else if (error.response.status === 412) {
-        setErrorMessage(error.response.data.message);
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        setErrorMessage("");
-        setCreateFolderModalOpen(false);
-
-        return;
-      }
-
-      console.error("Error submitting form:", error);
+      setLoading(false);
+      return;
     }
+
+    createFolderMutation.mutate({ folderName, teamName, userId, folderId });
+
+    return;
   };
 
   return (
