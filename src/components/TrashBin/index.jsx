@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { LeaveTeam } from "../Modal/LeaveTeam";
 import { DeleteRestoreFileFolder } from "../Modal/DeleteRestoreFileFolder";
 import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
-
-import useUserStore from "../store/userData";
-
-import axios from "axios";
+import { fetchTrashBinData } from "../../utils/api/fetchTrashBinData";
 
 function TrashBin() {
-  const { userData } = useUserStore();
-  const { teamId } = useParams();
   const navigate = useNavigate();
+  const { teamId } = useParams();
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(["userData"]);
+  const userId = userData._id;
 
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
   const [
@@ -29,7 +29,12 @@ function TrashBin() {
   const [currentUserRole, setUserRole] = useState("");
   const [filterValue, setFilterValue] = useState("");
   const [currentTeam, setCurrentTeam] = useState(null);
-  const [trashBin, setTrashBin] = useState([]);
+
+  const { data: trashBin } = useQuery({
+    queryKey: ["trashBin"],
+    queryFn: () => fetchTrashBinData(teamId),
+    enabled: !!currentTeam,
+  });
 
   useEffect(() => {
     const team = userData.teams.find((team) => team._id === teamId);
@@ -47,24 +52,6 @@ function TrashBin() {
       setUserRole(currentUserRole);
     }
   }, [userData.teams, teamId, currentTeam]);
-
-  useEffect(() => {
-    if (currentTeam) {
-      getData();
-    }
-  }, [currentTeam]);
-
-  const getData = async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/trash/${teamId}/`,
-      );
-
-      setTrashBin(response.data.trashBin);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const filteredFolders =
     trashBin && trashBin.folders
@@ -220,6 +207,8 @@ function TrashBin() {
         <LeaveTeam
           setLeaveTeamModalOpen={setLeaveTeamModalOpen}
           currentTeam={currentTeam}
+          queryClient={queryClient}
+          userData={userData}
         />
       )}
       {isDeleteRestoreFileFolderModalOpen && (
@@ -229,8 +218,8 @@ function TrashBin() {
           }
           selectedElementId={selectedElementId}
           selectedType={selectedType}
-          setTrashBin={setTrashBin}
           currentUserRole={currentUserRole}
+          userId={userId}
         />
       )}
       {isManageTeamMemberModalOpen && (
