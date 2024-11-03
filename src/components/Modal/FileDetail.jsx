@@ -1,16 +1,27 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import DropZone from "../DropZone";
-import { handleDownloadFile } from "../../utils/downloadFile";
-import useUserStore from "../store/userData";
-import axios from "axios";
 
-export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
+import { handleDownloadFile } from "../../utils/downloadFile";
+import { useSubmitComment } from "../../utils/api/submitComment";
+
+export function FileDetail({
+  setFileDetailOpen,
+  file,
+  currentUserRole,
+  teamId,
+  queryClient,
+  userData,
+}) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [changedFields, setChangedFields] = useState([]);
-  const { userData, setUserData } = useUserStore();
   const commentRef = useRef("");
+  const submitCommentMutation = useSubmitComment(
+    queryClient,
+    setSelectedFile,
+    commentRef,
+  );
 
   const handleModalClick = () => {
     setFileDetailOpen(false);
@@ -56,15 +67,17 @@ export function FileDetail({ setFileDetailOpen, file, currentUserRole }) {
     commentRef.current = event.target.value;
   };
 
-  const handleCommentSubmit = async (fileID) => {
+  const handleCommentSubmit = (fileId) => {
     const comment = commentRef.current;
     const userId = userData._id;
-    const response = await axios.post(
-      `${import.meta.env.VITE_SERVER_URL}/file/${fileID}/newcomment/${userId}`,
-      { comment },
-    );
 
-    setUserData(response.data.user);
+    submitCommentMutation.mutate({
+      fileId,
+      userId,
+      comment,
+      teamId,
+    });
+
     commentRef.current = "";
   };
 
