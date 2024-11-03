@@ -1,11 +1,16 @@
 import { useNavigate } from "react-router-dom";
 
-import axios from "axios";
-import useUserStore from "../store/userData";
+import { useLeaveTeam } from "../../utils/api/leaveTeam";
 
-export function LeaveTeam({ setLeaveTeamModalOpen, currentTeam }) {
-  const { userData, setUserData } = useUserStore();
+export function LeaveTeam({
+  setLeaveTeamModalOpen,
+  currentTeam,
+  queryClient,
+  userData,
+}) {
   const navigate = useNavigate();
+
+  const leaveTeamMutation = useLeaveTeam(queryClient, navigate);
 
   const currentUser = currentTeam.members.find(
     (user) => user.user.nickname === userData.nickname,
@@ -15,23 +20,10 @@ export function LeaveTeam({ setLeaveTeamModalOpen, currentTeam }) {
   const teamName = currentTeam.name;
   const teamId = currentTeam._id;
 
-  const handleLeaveTeamConfirm = async () => {
-    try {
-      const response = await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL}/team/${teamId}/withdraw/${
-          userData._id
-        }`,
-        {
-          data: { currentUserRole },
-        },
-      );
+  const handleLeaveTeamConfirm = () => {
+    const userId = userData._id;
 
-      setUserData(response.data.updatedUser);
-      navigate("/myteam");
-    } catch (error) {
-      console.error(error);
-    }
-    setLeaveTeamModalOpen(false);
+    leaveTeamMutation.mutate({ teamId, userId, currentUserRole });
   };
 
   const handleLeaveTeamCancel = () => {
