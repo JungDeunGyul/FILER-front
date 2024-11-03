@@ -1,14 +1,22 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import useUserStore from "../store/userData";
-import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUploadFile } from "../../utils/api/uploadFile";
 
-const DropZone = ({ teamId, userId, folderId, fileId, setFolder }) => {
-  const { setUserData } = useUserStore();
+const DropZone = ({ teamId, userId, folderId, fileId }) => {
   const [files, setFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const queryClient = useQueryClient();
+  const uploadFileMutation = useUploadFile(
+    queryClient,
+    setFiles,
+    setUploading,
+    setUploadSuccess,
+    setErrorMessage,
+  );
 
   const MAX_FILE_SIZE_MB = 30;
   const allowedFileTypes = {
@@ -58,76 +66,26 @@ const DropZone = ({ teamId, userId, folderId, fileId, setFolder }) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const handleUpload = async () => {
-    try {
-      if (uploading) {
-        return;
-      }
-
-      setUploading(true);
-      setUploadSuccess(false);
-
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("file", file, encodeURIComponent(file.name));
-      });
-
-      let response;
-
-      if (fileId) {
-        response = await axios.patch(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/file/${fileId}/updatefile/${userId}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          },
-        );
-      } else if (folderId) {
-        response = await axios.post(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/file/${folderId}/uploadfile/${userId}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          },
-        );
-        setFolder(response.data.folder);
-      } else if (teamId) {
-        response = await axios.post(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/team/${teamId}/uploadfile/${userId}`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          },
-        );
-      }
-
-      if (response) {
-        setUserData(response.data.updatedUser || response.data.user);
-        setFiles([]);
-        setUploadSuccess(true);
-      }
-    } catch (error) {
-      console.error("Error uploading files:", error);
-      setErrorMessage("파일 업로드 중 오류가 발생했습니다.");
-    } finally {
-      setUploading(false);
+    if (uploading) {
+      return;
     }
+
+    setUploading(true);
+    setUploadSuccess(false);
+
+    uploadFileMutation.mutate({
+      files,
+      teamId,
+      userId,
+      folderId,
+      fileId,
+    });
   };
 
   const handleCloseUpload = () => {
     setFiles([]);
     setErrorMessage("");
+    setUploading(false);
     setUploadSuccess(false);
   };
 
