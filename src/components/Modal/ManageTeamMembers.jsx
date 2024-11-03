@@ -1,23 +1,31 @@
 import React, { useState } from "react";
-import useUserStore from "../store/userData";
-import axios from "axios";
+
+import { useUpdateTeamMembers } from "../../utils/api/updateTeamMembers";
 
 export function ManageTeamMembers({
   setManageTeamMemberModalOpen,
   currentTeam,
   currentUserRole,
+  queryClient,
+  userData,
 }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
 
-  const { userData, setUserData } = useUserStore();
+  const createFolderMutation = useUpdateTeamMembers(
+    queryClient,
+    setErrorMessage,
+    setSuccessMessage,
+    setManageTeamMemberModalOpen,
+  );
 
-  const handlePermissionSettingButton = async (event, selectedRole) => {
+  const handlePermissionSettingButton = (event, selectedRole) => {
     event.preventDefault();
 
     if (currentUserRole !== "팀장") {
       setErrorMessage("팀장 이외에는 권한 설정 권한이 없습니다.");
+
       return setTimeout(() => {
         setErrorMessage("");
         setManageTeamMemberModalOpen(false);
@@ -28,31 +36,13 @@ export function ManageTeamMembers({
     const selectedMemberId = selectedMember.user._id;
     const teamId = currentTeam._id;
 
-    try {
-      const response = await axios.patch(
-        `${
-          import.meta.env.VITE_SERVER_URL
-        }/team/${selectedMemberId}/manageteam/`,
-        { currentUserRole, selectedRole, teamId, userId },
-      );
-
-      if (response.status === 201) {
-        setSuccessMessage(response.data.message);
-        setTimeout(() => {
-          setSuccessMessage("");
-          setUserData(response.data.currentUser);
-          setManageTeamMemberModalOpen(false);
-        }, 2000);
-      } else {
-        setErrorMessage(response.data.message);
-        setTimeout(() => {
-          setErrorMessage("");
-          setManageTeamMemberModalOpen(false);
-        }, 2000);
-      }
-    } catch (error) {
-      console.error(error);
-    }
+    createFolderMutation.mutate({
+      selectedMemberId,
+      currentUserRole,
+      selectedRole,
+      teamId,
+      userId,
+    });
   };
 
   const handleCloseButton = () => {
