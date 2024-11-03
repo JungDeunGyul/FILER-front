@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -9,13 +9,15 @@ import { FolderAccess } from "../Modal/FolderAccess";
 import { PermissionSetting } from "../Modal/PermissionSetting";
 import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
 
-import { scrollHandler } from "../../utils/scrollHandler";
 import { handleDownloadFile } from "../../utils/downloadFile";
 
 import { fetchFolderData } from "../../utils/api/fetchFolderData";
 import { useMoveFileToTrash } from "../../utils/api/moveFileToTrash";
 import { useMoveFileToFolder } from "../../utils/api/moveFileToFolder";
 import { useMoveFolderToTrash } from "../../utils/api/moveFolderToTrash";
+
+import { useCurrentTeam } from "../../utils/hook/useCurrentTeam";
+import { useScrollHandler } from "../../utils/hook/useScrollHandler";
 
 import Sidebar from "../Sidebar";
 import FileGrid from "../FileGrid";
@@ -42,32 +44,16 @@ function Folder() {
     useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
 
-  const [currentTeam, setCurrentTeam] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [currentUserRole, setUserRole] = useState("");
   const [filterValue, setFilterValue] = useState("");
   const [selectedElementId, setSelectedElementId] = useState("");
   const [selectedType, setSelectedType] = useState("");
 
   const [filesToShow, setFilesToShow] = useState(12);
   const scrollContainerRef = useRef(null);
-  const handleScroll = scrollHandler(scrollContainerRef, setFilesToShow);
 
-  useEffect(() => {
-    const team = userData.teams.find((team) => team._id === teamId);
-
-    if (team !== currentTeam) {
-      setCurrentTeam(team);
-    }
-    if (team && team.members) {
-      const currentUser = team.members.find(
-        (user) => user.user.nickname === userData.nickname,
-      );
-
-      const currentUserRole = currentUser ? currentUser.role : "";
-      setUserRole(currentUserRole);
-    }
-  }, [userData.teams, teamId, currentTeam, userData.nickname]);
+  const { currentTeam, currentUserRole } = useCurrentTeam(userData, teamId);
+  useScrollHandler(scrollContainerRef, setFilesToShow);
 
   const { data: folderData } = useQuery({
     queryKey: ["folderData", folderId],
@@ -75,20 +61,6 @@ function Folder() {
     enabled: !!currentUserRole && !!folderId,
     retry: false,
   });
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [handleScroll]);
 
   const filteredFolders = useMemo(() => {
     return folderData && folderData.subFolders
