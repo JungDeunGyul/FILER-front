@@ -19,9 +19,7 @@ export function DeleteRestoreFileFolder({
     setDeleteRestoreFileFolderModalOpen,
   );
 
-  const handleDeleteButton = (event) => {
-    event.preventDefault();
-
+  const handleDeleteButton = () => {
     const url =
       selectedType === "folder"
         ? `/trash/folder/${selectedElementId}/delete`
@@ -30,9 +28,7 @@ export function DeleteRestoreFileFolder({
     deleteFilerFolderMutation.mutate({ url, currentUserRole });
   };
 
-  const handleRestoreButton = (event) => {
-    event.preventDefault();
-
+  const handleRestoreButton = () => {
     const url =
       selectedType === "folder"
         ? `/restore/folder/${selectedElementId}`
