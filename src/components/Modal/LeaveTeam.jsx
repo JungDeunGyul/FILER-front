@@ -18,10 +18,10 @@ export function LeaveTeam({
 
   const currentUserRole = currentUser.role;
   const teamName = currentTeam.name;
-  const teamId = currentTeam._id;
 
   const handleLeaveTeamConfirm = () => {
     const userId = userData._id;
+    const teamId = currentTeam._id;
 
     leaveTeamMutation.mutate({ teamId, userId, currentUserRole });
   };
