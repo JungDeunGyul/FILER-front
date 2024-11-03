@@ -1,56 +1,48 @@
-import React from "react";
-import useUserStore from "../store/userData";
-import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
+import { useDeleteFileFolder } from "../../utils/api/deleteFileFolder";
+import { useRestoreFileFolder } from "../../utils/api/restoreFileFolder";
 
 export function DeleteRestoreFileFolder({
   setDeleteRestoreFileFolderModalOpen,
   selectedElementId,
   selectedType,
-  setTrashBin,
   currentUserRole,
+  userId,
 }) {
-  const { userData, setUserData } = useUserStore();
+  const queryClient = useQueryClient();
+  const deleteFilerFolderMutation = useDeleteFileFolder(
+    queryClient,
+    setDeleteRestoreFileFolderModalOpen,
+  );
+  const restoreFileFolderMutation = useRestoreFileFolder(
+    queryClient,
+    setDeleteRestoreFileFolderModalOpen,
+  );
 
-  const handleDeleteButton = async (event) => {
+  const handleDeleteButton = (event) => {
     event.preventDefault();
-    try {
-      const url =
-        selectedType === "folder"
-          ? `/trash/folder/${selectedElementId}/delete`
-          : `/trash/file/${selectedElementId}/delete`;
 
-      const response = await axios.delete(
-        `${import.meta.env.VITE_SERVER_URL}${url}`,
-        { currentUserRole },
-      );
+    const url =
+      selectedType === "folder"
+        ? `/trash/folder/${selectedElementId}/delete`
+        : `/trash/file/${selectedElementId}/delete`;
 
-      setTrashBin(response.data.trashBin);
-      setDeleteRestoreFileFolderModalOpen(false);
-    } catch (error) {
-      console.error(error);
-    }
+    deleteFilerFolderMutation.mutate({ url, currentUserRole });
   };
 
-  const handleRestoreButton = async (event) => {
+  const handleRestoreButton = (event) => {
     event.preventDefault();
-    try {
-      const userId = userData._id;
-      const url =
-        selectedType === "folder"
-          ? `/restore/folder/${selectedElementId}`
-          : `/restore/file/${selectedElementId}`;
 
-      const response = await axios.patch(
-        `${import.meta.env.VITE_SERVER_URL}${url}`,
-        { currentUserRole, userId },
-      );
+    const url =
+      selectedType === "folder"
+        ? `/restore/folder/${selectedElementId}`
+        : `/restore/file/${selectedElementId}`;
 
-      setTrashBin(response.data.trashBin);
-      setUserData(response.data.user);
-      setDeleteRestoreFileFolderModalOpen(false);
-    } catch (error) {
-      console.error(error);
-    }
+    restoreFileFolderMutation.mutate({
+      url,
+      currentUserRole,
+      userId,
+    });
   };
 
   const handleCloseButton = () => {
