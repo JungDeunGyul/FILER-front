@@ -1,15 +1,28 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import useUserStore from "../store/userData";
 
-export function TeamFormModal({ setModalOpen, isCreateMode }) {
+import { useManageTeamRequests } from "../../utils/api/manageTeamRequests";
+
+export function TeamFormModal({
+  setModalOpen,
+  isCreateMode,
+  userData,
+  queryClient,
+}) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const teamInputRef = useRef(null);
   const navigate = useNavigate();
-  const { userData, setUserData } = useUserStore();
+
+  const manageTeamReuestsMutation = useManageTeamRequests(
+    queryClient,
+    setErrorMessage,
+    setSuccessMessage,
+    setModalOpen,
+    setLoading,
+    navigate,
+  );
 
   const handleCloseModals = () => {
     setModalOpen(false);
@@ -39,47 +52,15 @@ export function TeamFormModal({ setModalOpen, isCreateMode }) {
       return;
     }
 
-    try {
-      const apiUrl = isCreateMode
-        ? `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/new/${
-            userData._id
-          }`
-        : `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/joinrequest/${
-            userData._id
-          }`;
+    const url = isCreateMode
+      ? `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/new/${
+          userData._id
+        }`
+      : `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/joinrequest/${
+          userData._id
+        }`;
 
-      const response = await axios({
-        method: isCreateMode ? "post" : "patch",
-        url: apiUrl,
-        data: isCreateMode ? {} : { action: "가입요청" },
-      });
-
-      if (response.status === (isCreateMode ? 201 : 200)) {
-        setSuccessMessage(
-          isCreateMode
-            ? response.data.message
-            : "신청이 성공적으로 완료되었습니다!",
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        setSuccessMessage("");
-        setModalOpen(false);
-
-        if (isCreateMode) {
-          setUserData(response.data.updatedUser);
-          navigate("/myteam");
-        }
-      }
-    } catch (error) {
-      const errorMsg = error.response
-        ? error.response.data.message
-        : "오류가 발생했습니다.";
-      setErrorMessage(errorMsg);
-    } finally {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      setLoading(false);
-    }
+    manageTeamReuestsMutation.mutate({ url, isCreateMode });
   };
 
   return (

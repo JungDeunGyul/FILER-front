@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { TeamFormModal } from "../Modal/TeamFormModal";
 
@@ -7,6 +8,8 @@ function ExploreTeam() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isCreateMode, setIsCreateMode] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(["userData"]);
 
   const handleOpenModal = (isCreateMode) => {
     setIsCreateMode(isCreateMode);
@@ -43,6 +46,8 @@ function ExploreTeam() {
           <TeamFormModal
             setModalOpen={setModalOpen}
             isCreateMode={isCreateMode}
+            userData={userData}
+            queryClient={queryClient}
           />
         </div>
       )}
