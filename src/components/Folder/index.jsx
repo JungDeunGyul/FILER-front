@@ -1,30 +1,37 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { LeaveTeam } from "../Modal/LeaveTeam";
+import { FileDetail } from "../Modal/FileDetail";
+import { CreateFolder } from "../Modal/CreateFolder";
+import { FolderAccess } from "../Modal/FolderAccess";
+import { PermissionSetting } from "../Modal/PermissionSetting";
+import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
+
+import { scrollHandler } from "../../utils/scrollHandler";
+import { handleDownloadFile } from "../../utils/downloadFile";
+
+import { fetchFolderData } from "../../utils/api/fetchFolderData";
+import { useMoveFileToTrash } from "../../utils/api/moveFileToTrash";
+import { useMoveFileToFolder } from "../../utils/api/moveFileToFolder";
+import { useMoveFolderToTrash } from "../../utils/api/moveFolderToTrash";
 
 import Sidebar from "../Sidebar";
 import FileGrid from "../FileGrid";
+import DropZone from "../DropZone";
 import FolderGrid from "../FolderGrid";
 import FolderAndTeamListButtons from "../FolderAndTeamListButtons";
 
-import { scrollHandler } from "../../utils/scrollHandler";
-import { CreateFolder } from "../Modal/CreateFolder";
-import { LeaveTeam } from "../Modal/LeaveTeam";
-import { FileDetail } from "../Modal/FileDetail";
-import { PermissionSetting } from "../Modal/PermissionSetting";
-import { FolderAccess } from "../Modal/FolderAccess";
-import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
-
-import { handleDownloadFile } from "../../utils/downloadFile";
-
-import DropZone from "../DropZone";
-import useUserStore from "../store/userData";
-
-import axios from "axios";
-
 function Folder() {
-  const { userData, setUserData } = useUserStore();
-  const { teamId, folderId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(["userData"]);
+  const { teamId, folderId } = useParams();
+
+  const moveFileToTrashMutation = useMoveFileToTrash(queryClient);
+  const moveFolderToTrashMutation = useMoveFolderToTrash(queryClient);
+  const moveFileToFolderMutation = useMoveFileToFolder(queryClient);
 
   const [isCreateFolderModalOpen, setCreateFolderModalOpen] = useState(false);
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
@@ -35,7 +42,6 @@ function Folder() {
     useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
 
-  const [folderData, setFolder] = useState([]);
   const [currentTeam, setCurrentTeam] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [currentUserRole, setUserRole] = useState("");
@@ -63,32 +69,12 @@ function Folder() {
     }
   }, [userData.teams, teamId, currentTeam, userData.nickname]);
 
-  useEffect(() => {
-    if (currentTeam) {
-      getData();
-    }
-  }, [currentTeam, folderId]);
-
-  const getData = async () => {
-    const currentUser = currentTeam.members.find(
-      (user) => user.user.nickname === userData.nickname,
-    );
-
-    const currentUserRole = currentUser.role;
-
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/folder/${folderId}/`,
-        {
-          data: { currentUserRole },
-        },
-      );
-
-      setFolder(response.data.folder);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const { data: folderData } = useQuery({
+    queryKey: ["folderData", folderId],
+    queryFn: () => fetchFolderData(currentUserRole, folderId),
+    enabled: !!currentUserRole && !!folderId,
+    retry: false,
+  });
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -121,7 +107,7 @@ function Folder() {
   }, [folderData, filterValue]);
 
   const handleFolderClick = useCallback(
-    (folderId, folderVisibleTo) => {
+    async (folderId, folderVisibleTo) => {
       if (
         folderVisibleTo !== "수습" &&
         currentUserRole !== "팀장" &&
@@ -140,7 +126,7 @@ function Folder() {
         )}/folder/${encodeURIComponent(folderId)}`,
       );
     },
-    [currentUserRole],
+    [currentUserRole, navigate, currentTeam],
   );
 
   const handleFileClick = useCallback((fileId) => {
@@ -194,89 +180,50 @@ function Folder() {
     event.dataTransfer.setData("folderId", folderId);
   }, []);
 
-  const moveFileToFolder = useCallback(
-    async (fileId, folderId) => {
-      try {
-        const response = await axios.patch(
-          `${
-            import.meta.env.VITE_SERVER_URL
-          }/file/${fileId}/move-to-folder/${folderId}`,
-          { userId: userData._id, currentUserRole },
-        );
-
-        setUserData(response.data.user);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [currentUserRole, setUserData, userData._id],
-  );
-
   const handleFolderDrop = useCallback(
     async (event, folderId) => {
       event.preventDefault();
 
       const fileId = event.dataTransfer.getData("fileId");
-      moveFileToFolder(fileId, folderId);
+
+      moveFileToFolderMutation.mutate({
+        fileId,
+        folderId,
+        userId: userData._id,
+        currentUserRole,
+      });
     },
-    [moveFileToFolder],
+    [currentUserRole, moveFileToFolderMutation, userData._id],
   );
 
   const handleClickTrashBin = () => {
     navigate(`/team/${encodeURIComponent(currentTeam._id)}/trash`);
   };
 
-  const moveFileToTrash = useCallback(
-    async (fileId) => {
-      try {
-        const response = await axios.patch(
-          `${import.meta.env.VITE_SERVER_URL}/trash/file/${fileId}/`,
-          { userId: userData._id, currentUserRole },
-        );
-
-        setUserData(response.data.user);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [currentUserRole, setUserData, userData._id],
-  );
-
-  const moveFolderToTrash = useCallback(
-    async (folderId) => {
-      try {
-        const response = await axios.patch(
-          `${import.meta.env.VITE_SERVER_URL}/trash/folder/${folderId}/`,
-          { userId: userData._id, currentUserRole },
-        );
-
-        setUserData(response.data.user);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [currentUserRole, setUserData, userData._id],
-  );
-
   const handleTrashDragOver = useCallback((event) => {
     event.preventDefault();
   }, []);
 
-  const handleTrashDrop = useCallback(
-    (event) => {
-      event.preventDefault();
+  const handleTrashDrop = (event) => {
+    event.preventDefault();
 
-      const fileId = event.dataTransfer.getData("fileId");
-      const folderId = event.dataTransfer.getData("folderId");
+    const fileId = event.dataTransfer.getData("fileId");
+    const folderId = event.dataTransfer.getData("folderId");
 
-      if (fileId) {
-        moveFileToTrash(fileId);
-      } else if (folderId) {
-        moveFolderToTrash(folderId);
-      }
-    },
-    [moveFileToTrash, moveFolderToTrash],
-  );
+    if (fileId) {
+      moveFileToTrashMutation.mutate({
+        fileId,
+        userId: userData._id,
+        currentUserRole,
+      });
+    } else if (folderId) {
+      moveFolderToTrashMutation.mutate({
+        folderId,
+        userId: userData._id,
+        currentUserRole,
+      });
+    }
+  };
 
   if (!currentTeam) {
     return (
@@ -309,7 +256,6 @@ function Folder() {
           teamId={currentTeam._id}
           userId={userData._id}
           folderId={folderId}
-          setFolder={setFolder}
         />
         <div className="relative mt-2">
           <input
@@ -344,8 +290,9 @@ function Folder() {
           <CreateFolder
             setCreateFolderModalOpen={setCreateFolderModalOpen}
             teamName={currentTeam.name}
+            queryClient={queryClient}
+            userData={userData}
             folderId={folderId}
-            setFolder={setFolder}
           />
         </div>
       )}
@@ -353,6 +300,8 @@ function Folder() {
         <LeaveTeam
           setLeaveTeamModalOpen={setLeaveTeamModalOpen}
           currentTeam={currentTeam}
+          queryClient={queryClient}
+          userData={userData}
         />
       )}
       {isFileDetailOpen && (
@@ -360,6 +309,9 @@ function Folder() {
           setFileDetailOpen={setFileDetailOpen}
           file={selectedFile}
           currentUserRole={currentUserRole}
+          queryClient={queryClient}
+          userData={userData}
+          teamId={teamId}
         />
       )}
       {isPermissionModalOpen && (
@@ -369,6 +321,8 @@ function Folder() {
           selectedType={selectedType}
           currentUserRole={currentUserRole}
           clickPosition={clickPosition}
+          queryClient={queryClient}
+          userData={userData}
         />
       )}
       {isFolderAccessModalOpen && (
@@ -379,6 +333,8 @@ function Folder() {
           setManageTeamMemberModalOpen={setManageTeamMemberModalOpen}
           currentTeam={currentTeam}
           currentUserRole={currentUserRole}
+          queryClient={queryClient}
+          userData={userData}
         />
       )}
     </div>
