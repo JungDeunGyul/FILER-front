@@ -1,51 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useUserStore from "../store/userData";
-import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUpdateNotification } from "../../utils/api/updateNotification";
+import { useEventSource } from "../../utils/api/eventSource";
 
 function Header() {
   const navigate = useNavigate();
-
-  const { userData, setUserData } = useUserStore();
-  const [isNotificationOpen, setNotificationOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(["userData"]);
   const iconURI = userData.iconpath;
+  const loginUserId = userData._id;
 
-  useEffect(() => {
-    const loginUserId = userData._id;
+  const [isNotificationOpen, setNotificationOpen] = useState(false);
+  const handleUpdateNotification = useUpdateNotification(queryClient);
 
-    const source = new EventSource(
-      `${import.meta.env.VITE_SERVER_URL}/team/filer-stream/${loginUserId}`,
-    );
+  useEventSource(queryClient, loginUserId);
 
-    source.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+  const handleAcceptReject = (notification, action) => {
+    handleUpdateNotification.mutate({
+      notification,
+      action,
+      userId: loginUserId,
+    });
 
-      setUserData(data.userData);
-    };
-
-    return () => {
-      if (source) {
-        source.close();
-      }
-    };
-  }, [userData]);
-
-  const handleAcceptReject = async (notification, action) => {
-    const teamName = notification.team.name;
-    const requestUserId = notification.requestUser;
-
-    await axios.patch(
-      `${import.meta.env.VITE_SERVER_URL}/notification/${notification._id}`,
-    );
-
-    const response = await axios.patch(
-      `${import.meta.env.VITE_SERVER_URL}/team/${teamName}/joinrequest/${
-        userData._id
-      }`,
-      { action, requestUserId },
-    );
-
-    setUserData(response.data.userData);
+    queryClient.invalidateQueries(["userData"]);
   };
 
   const handleIconClick = () => {
@@ -68,19 +46,20 @@ function Header() {
           alt="User Icon"
           className="rounded-full h-10 w-10 cursor-pointer"
         />
-        {userData.notifications.filter((notification) => !notification.isRead)
-          .length > 0 && (
+        {userData?.notifications?.filter(
+          (notification) => !notification?.isRead,
+        ).length > 0 && (
           <div className="absolute -top-1 -right-1 bg-red-500 text-xs text-white rounded-full h-4 w-4 flex justify-center items-center">
             {
               userData.notifications.filter(
-                (notification) => !notification.isRead,
+                (notification) => !notification?.isRead,
               ).length
             }
           </div>
         )}
         {isNotificationOpen && (
           <div className="absolute right-0 mt-12 w-80 bg-white border border-gray-200 shadow-lg text-gray-700 rounded-lg p-4 z-10">
-            {userData.notifications.map(
+            {userData?.notifications?.map(
               (notification) =>
                 !notification.isRead && (
                   <div key={notification._id} className="mb-4">
