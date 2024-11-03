@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useUserStore from "../store/userData";
+import { useQueryClient } from "@tanstack/react-query";
 
 function MyTeam() {
-  const { userData } = useUserStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(["userData"]);
   const [filterValue, setFilterValue] = useState("");
 
-  const filteredTeams = userData.teams.filter((team) =>
-    team.name.toLowerCase().includes(filterValue.toLowerCase()),
-  );
+  const filteredTeams =
+    userData.teams.filter((team) =>
+      team.name.toLowerCase().includes(filterValue.toLowerCase()),
+    ) || [];
 
   const handleTeamClick = (teamId) => {
     navigate(`/team/${encodeURIComponent(teamId)}`);
