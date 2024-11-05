@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { TeamFormModal } from "../../components/modal/TeamFormModal";
+import { TeamFormModal } from "../components/modal/TeamFormModal";
 
 function ExploreTeam() {
   const [isModalOpen, setModalOpen] = useState(false);

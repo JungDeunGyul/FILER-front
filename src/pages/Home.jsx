@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 
-import ExploreTeam from "../ExploreTeam";
-import MyTeam from "../MyTeam";
+import ExploreTeam from "./ExploreTeam";
+import MyTeam from "./MyTeam";
 
 function Home() {
   const queryClient = useQueryClient();
