@@ -1,5 +1,5 @@
-import { DocViewerWrapper } from "../../utils/docViewerWrapper";
-import { getFileIconUrl } from "../../utils/fileIconURL";
+import { DocViewerWrapper } from "../utils/docViewerWrapper";
+import { getFileIconUrl } from "../utils/fileIconURL";
 
 const FileGrid = ({
   filteredFiles,

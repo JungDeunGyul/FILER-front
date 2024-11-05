@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUploadFile } from "../../utils/api/uploadFile";
+import { useUploadFile } from "../utils/api/uploadFile";
 
 const DropZone = ({ teamId, userId, folderId, fileId }) => {
   const [files, setFiles] = useState([]);
