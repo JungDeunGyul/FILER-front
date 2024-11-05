@@ -4,7 +4,7 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../../utils/firebase";
 import { useLoginUser } from "../../utils/api/auth";
 
-import ImagePlaceholder from "../ImagePlaceholder";
+import ImagePlaceholder from "../../components/ImagePlaceholder";
 
 function Login({ setUserId }) {
   const navigate = useNavigate();

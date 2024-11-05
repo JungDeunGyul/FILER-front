@@ -1,34 +1,35 @@
-import React, { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { LeaveTeam } from "../Modal/LeaveTeam";
-import { FileDetail } from "../Modal/FileDetail";
-import { CreateFolder } from "../Modal/CreateFolder";
-import { FolderAccess } from "../Modal/FolderAccess";
-import { PermissionSetting } from "../Modal/PermissionSetting";
-import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
+import { LeaveTeam } from "../../components/modal/LeaveTeam";
+import { FileDetail } from "../../components/modal/FileDetail";
+import { CreateFolder } from "../../components/modal/CreateFolder";
+import { FolderAccess } from "../../components/modal/FolderAccess";
+import { PermissionSetting } from "../../components/modal/PermissionSetting";
+import { ManageTeamMembers } from "../../components/modal/ManageTeamMembers";
 
 import { handleDownloadFile } from "../../utils/downloadFile";
 
-import { useMoveFolderToTrash } from "../../utils/api/moveFolderToTrash";
+import { fetchFolderData } from "../../utils/api/fetchFolderData";
 import { useMoveFileToTrash } from "../../utils/api/moveFileToTrash";
 import { useMoveFileToFolder } from "../../utils/api/moveFileToFolder";
+import { useMoveFolderToTrash } from "../../utils/api/moveFolderToTrash";
 
 import { useCurrentTeam } from "../../utils/hook/useCurrentTeam";
 import { useScrollHandler } from "../../utils/hook/useScrollHandler";
 
-import Sidebar from "../Sidebar";
-import FileGrid from "../FileGrid";
-import DropZone from "../DropZone";
-import FolderGrid from "../FolderGrid";
-import FolderAndTeamListButtons from "../FolderAndTeamListButtons";
+import Sidebar from "../../components/Sidebar";
+import FileGrid from "../../components/FileGrid";
+import DropZone from "../../components/DropZone";
+import FolderGrid from "../../components/FolderGrid";
+import FolderAndTeamListButtons from "../../components/FolderAndTeamListButtons";
 
-function Team() {
+function Folder() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const userData = queryClient.getQueryData(["userData"]);
-  const { teamId } = useParams();
+  const { teamId, folderId } = useParams();
 
   const moveFileToTrashMutation = useMoveFileToTrash(queryClient);
   const moveFolderToTrashMutation = useMoveFolderToTrash(queryClient);
@@ -54,24 +55,31 @@ function Team() {
   const { currentTeam, currentUserRole } = useCurrentTeam(userData, teamId);
   useScrollHandler(scrollContainerRef, setFilesToShow);
 
+  const { data: folderData } = useQuery({
+    queryKey: ["folderData", folderId],
+    queryFn: () => fetchFolderData(currentUserRole, folderId),
+    enabled: !!currentUserRole && !!folderId,
+    retry: false,
+  });
+
   const filteredFolders = useMemo(() => {
-    return currentTeam
-      ? currentTeam.ownedFolders.filter((folder) =>
+    return folderData && folderData.subFolders
+      ? folderData.subFolders.filter((folder) =>
           folder.name.toLowerCase().includes(filterValue.toLowerCase()),
         )
       : [];
-  }, [currentTeam, filterValue]);
+  }, [folderData, filterValue]);
 
   const filteredFiles = useMemo(() => {
-    return currentTeam
-      ? currentTeam.ownedFiles.filter((file) =>
+    return folderData && folderData.files
+      ? folderData.files.filter((file) =>
           file.name.toLowerCase().includes(filterValue.toLowerCase()),
         )
       : [];
-  }, [currentTeam, filterValue]);
+  }, [folderData, filterValue]);
 
   const handleFolderClick = useCallback(
-    (folderId, folderVisibleTo) => {
+    async (folderId, folderVisibleTo) => {
       if (
         folderVisibleTo !== "수습" &&
         currentUserRole !== "팀장" &&
@@ -125,12 +133,12 @@ function Team() {
     setLeaveTeamModalOpen(true);
   }, []);
 
-  const handlePermissionClick = useCallback((event, elementId, type) => {
+  const handlePermissionClick = (event, elementId, type) => {
     setSelectedElementId(elementId);
     setSelectedType(type);
     setPermissionModalOpen(true);
     setClickPosition({ x: event.clientX, y: event.clientY });
-  }, []);
+  };
 
   const handleTeamMemberClick = useCallback(() => {
     setManageTeamMemberModalOpen(true);
@@ -216,7 +224,11 @@ function Team() {
           onNavigate={() => navigate("/myteam")}
           onCreateFolder={handleCreateFolderClick}
         />
-        <DropZone teamId={currentTeam._id} userId={userData._id} />
+        <DropZone
+          teamId={currentTeam._id}
+          userId={userData._id}
+          folderId={folderId}
+        />
         <div className="relative mt-2">
           <input
             type="text"
@@ -252,6 +264,7 @@ function Team() {
             teamName={currentTeam.name}
             queryClient={queryClient}
             userData={userData}
+            folderId={folderId}
           />
         </div>
       )}
@@ -268,9 +281,9 @@ function Team() {
           setFileDetailOpen={setFileDetailOpen}
           file={selectedFile}
           currentUserRole={currentUserRole}
-          teamId={teamId}
           queryClient={queryClient}
           userData={userData}
+          teamId={teamId}
         />
       )}
       {isPermissionModalOpen && (
@@ -300,4 +313,4 @@ function Team() {
   );
 }
 
-export default Team;
+export default Folder;

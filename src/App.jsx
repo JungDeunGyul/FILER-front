@@ -7,15 +7,15 @@ import {
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Header from "./Header";
-import Home from "./Home";
-import ExploreTeam from "./ExploreTeam";
-import MyTeam from "./MyTeam";
-import Login from "./Login";
-import Team from "./Team";
-import Folder from "./Folder";
-import TrashBin from "./TrashBin";
-import { fetchUserData } from "../utils/api/fetchUserData";
+import Header from "./components/Header";
+import Home from "./pages/Home";
+import ExploreTeam from "./pages/ExploreTeam";
+import MyTeam from "./pages/MyTeam";
+import Login from "./pages/Login";
+import Team from "./pages/Team";
+import Folder from "./pages/Folder";
+import TrashBin from "./pages/TrashBin";
+import { fetchUserData } from "./utils/api/fetchUserData";
 
 function App() {
   const [userId, setUserId] = useState(null);

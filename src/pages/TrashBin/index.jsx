@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { LeaveTeam } from "../Modal/LeaveTeam";
-import { DeleteRestoreFileFolder } from "../Modal/DeleteRestoreFileFolder";
-import { ManageTeamMembers } from "../Modal/ManageTeamMembers";
+import { LeaveTeam } from "../../components/modal/LeaveTeam";
+import { DeleteRestoreFileFolder } from "../../components/modal/DeleteRestoreFileFolder";
+import { ManageTeamMembers } from "../../components/modal/ManageTeamMembers";
 
 import { getFileIconUrl } from "../../utils/fileIconURL";
 import { fetchTrashBinData } from "../../utils/api/fetchTrashBinData";
