@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Header from "./components/Header";
+import Header from "./components/layout/Header";
 import Home from "./pages/Home";
 import ExploreTeam from "./pages/ExploreTeam";
 import MyTeam from "./pages/MyTeam";
