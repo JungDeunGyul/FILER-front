@@ -19,10 +19,10 @@ import { useMoveFolderToTrash } from "../../utils/api/moveFolderToTrash";
 import { useCurrentTeam } from "../../utils/hook/useCurrentTeam";
 import { useScrollHandler } from "../../utils/hook/useScrollHandler";
 
-import Sidebar from "../../components/Sidebar";
-import FileGrid from "../../components/FileGrid";
+import Sidebar from "../../components/layout/Sidebar";
+import FileGrid from "../../components/layout/FileGrid";
 import DropZone from "../../components/DropZone";
-import FolderGrid from "../../components/FolderGrid";
+import FolderGrid from "../../components/layout/FolderGrid";
 import FolderAndTeamListButtons from "../../components/FolderAndTeamListButtons";
 
 function Folder() {
