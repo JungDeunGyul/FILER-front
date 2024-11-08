@@ -1,9 +1,11 @@
-export const throttle = (callback, delay) => {
+type ThrottleCallback = () => void;
+
+export const throttle = (callback: ThrottleCallback, delay: number) => {
   let isThrottled = false;
 
-  return (...args) => {
+  return () => {
     if (!isThrottled) {
-      callback(...args);
+      callback();
       isThrottled = true;
 
       setTimeout(() => (isThrottled = false), delay);

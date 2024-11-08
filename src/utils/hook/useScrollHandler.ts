@@ -1,7 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, Dispatch, SetStateAction } from "react";
 import { throttle } from "../throttle";
 
-export const useScrollHandler = (scrollContainerRef, setFilesToShow) => {
+interface useScrollHandlerProps {
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+  setFilesToShow: Dispatch<SetStateAction<number>>;
+}
+
+export const useScrollHandler = ({
+  scrollContainerRef,
+  setFilesToShow,
+}: useScrollHandlerProps) => {
   const handleScroll = throttle(() => {
     const container = scrollContainerRef.current;
 
