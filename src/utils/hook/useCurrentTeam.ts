@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { User, Teams } from "userRelatedTypes";
 
-export const useCurrentTeam = (userData, teamId) => {
-  const [currentTeam, setCurrentTeam] = useState(null);
+export const useCurrentTeam = (userData: User, teamId: string) => {
+  const [currentTeam, setCurrentTeam] = useState<Teams | null>(null);
   const [currentUserRole, setUserRole] = useState("");
 
   useEffect(() => {
