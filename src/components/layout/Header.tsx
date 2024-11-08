@@ -1,29 +1,32 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUpdateNotification } from "../../utils/api/updateNotification";
-import { useEventSource } from "../../utils/api/eventSource";
+import { useUpdateNotification } from "@api/updateNotification";
+import { useEventSource } from "@api/eventSource";
+
+import type { User, Notification } from "userRelatedTypes";
+type Action = "수락" | "거절" | undefined;
 
 function Header() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const userData = queryClient.getQueryData(["userData"]);
-  const iconURI = userData.iconpath;
-  const loginUserId = userData._id;
+  const userData = queryClient.getQueryData<User>(["userData"]);
+  const iconURI = userData!.iconpath;
+  const loginUserId = userData!._id;
 
   const [isNotificationOpen, setNotificationOpen] = useState(false);
-  const handleUpdateNotification = useUpdateNotification(queryClient);
+  const handleUpdateNotification = useUpdateNotification({ queryClient });
 
-  useEventSource(queryClient, loginUserId);
+  useEventSource({ queryClient, loginUserId });
 
-  const handleAcceptReject = (notification, action) => {
+  const handleAcceptReject = (notification: Notification, action?: Action) => {
     handleUpdateNotification.mutate({
       notification,
-      action,
+      action: action || undefined,
       userId: loginUserId,
     });
 
-    queryClient.invalidateQueries(["userData"]);
+    queryClient.invalidateQueries({ queryKey: ["userData"] });
   };
 
   const handleIconClick = () => {
@@ -46,12 +49,12 @@ function Header() {
           alt="User Icon"
           className="rounded-full h-10 w-10 cursor-pointer"
         />
-        {userData?.notifications?.filter(
+        {userData!.notifications?.filter(
           (notification) => !notification?.isRead,
         ).length > 0 && (
           <div className="absolute -top-1 -right-1 bg-red-500 text-xs text-white rounded-full h-4 w-4 flex justify-center items-center">
             {
-              userData.notifications.filter(
+              userData!.notifications.filter(
                 (notification) => !notification?.isRead,
               ).length
             }
@@ -59,7 +62,7 @@ function Header() {
         )}
         {isNotificationOpen && (
           <div className="absolute right-0 mt-12 w-80 bg-white border border-gray-200 shadow-lg text-gray-700 rounded-lg p-4 z-10">
-            {userData?.notifications?.map(
+            {userData!.notifications?.map(
               (notification) =>
                 !notification.isRead && (
                   <div key={notification._id} className="mb-4">
