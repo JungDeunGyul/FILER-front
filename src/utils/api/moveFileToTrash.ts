@@ -1,9 +1,19 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, QueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-export const useMoveFileToTrash = (queryClient) => {
+interface useMoveFileToTrashMutationProps {
+  fileId: string;
+  userId: string;
+  currentUserRole: string;
+}
+
+export const useMoveFileToTrash = (queryClient: QueryClient) => {
   return useMutation({
-    mutationFn: async ({ fileId, userId, currentUserRole }) => {
+    mutationFn: async ({
+      fileId,
+      userId,
+      currentUserRole,
+    }: useMoveFileToTrashMutationProps) => {
       await axios.patch(
         `${import.meta.env.VITE_SERVER_URL}/trash/file/${fileId}/`,
         { userId, currentUserRole },

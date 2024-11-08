@@ -1,34 +1,37 @@
-import React, { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { LeaveTeam } from "../../components/modal/LeaveTeam";
-import { FileDetail } from "../../components/modal/FileDetail";
-import { CreateFolder } from "../../components/modal/CreateFolder";
-import { FolderAccess } from "../../components/modal/FolderAccess";
-import { PermissionSetting } from "../../components/modal/PermissionSetting";
-import { ManageTeamMembers } from "../../components/modal/ManageTeamMembers";
+import { LeaveTeam } from "@modal/LeaveTeam";
+import { FileDetail } from "@modal/FileDetail";
+import { CreateFolder } from "@modal/CreateFolder";
+import { FolderAccess } from "@modal/FolderAccess";
+import { PermissionSetting } from "@modal/PermissionSetting";
+import { ManageTeamMembers } from "@modal/ManageTeamMembers";
 
-import { handleDownloadFile } from "../../utils/downloadFile";
+import { handleDownloadFile } from "@utils/downloadFile";
 
-import { useMoveFolderToTrash } from "../../utils/api/moveFolderToTrash";
-import { useMoveFileToTrash } from "../../utils/api/moveFileToTrash";
-import { useMoveFileToFolder } from "../../utils/api/moveFileToFolder";
+import { useMoveFolderToTrash } from "@api/moveFolderToTrash";
+import { useMoveFileToTrash } from "@api/moveFileToTrash";
+import { useMoveFileToFolder } from "@api/moveFileToFolder";
 
-import { useCurrentTeam } from "../../utils/hook/useCurrentTeam";
-import { useScrollHandler } from "../../utils/hook/useScrollHandler";
+import { useCurrentTeam } from "@hook/useCurrentTeam";
+import { useScrollHandler } from "@hook/useScrollHandler";
 
-import Sidebar from "../../components/layout/Sidebar";
-import FileGrid from "../../components/layout/FileGrid";
-import DropZone from "../../components/DropZone";
-import FolderGrid from "../../components/layout/FolderGrid";
-import FolderAndTeamListButtons from "../../components/FolderAndTeamListButtons";
+import Sidebar from "@components/Sidebar";
+import FileGrid from "@components/FileGrid";
+import DropZone from "@components/DropZone";
+import FolderGrid from "@components/FolderGrid";
+import FolderAndTeamListButtons from "@components/FolderAndTeamListButtons";
+
+import LoadingMessage from "@components/LoadingMessage";
+import type { OwnedFolder, OwnedFiles, User } from "userRelatedTypes";
 
 function Team() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const userData = queryClient.getQueryData(["userData"]);
-  const { teamId } = useParams();
+  const userData = queryClient.getQueryData<User>(["userData"]);
+  const { teamId } = useParams<{ teamId: string }>()!;
 
   const moveFileToTrashMutation = useMoveFileToTrash(queryClient);
   const moveFolderToTrashMutation = useMoveFolderToTrash(queryClient);
@@ -43,18 +46,21 @@ function Team() {
     useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
 
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<OwnedFiles | null>(null);
   const [filterValue, setFilterValue] = useState("");
   const [selectedElementId, setSelectedElementId] = useState("");
   const [selectedType, setSelectedType] = useState("");
 
   const [filesToShow, setFilesToShow] = useState(12);
-  const scrollContainerRef = useRef(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const { currentTeam, currentUserRole } = useCurrentTeam(userData, teamId);
-  useScrollHandler(scrollContainerRef, setFilesToShow);
+  const { currentTeam, currentUserRole } = useCurrentTeam(
+    userData as User,
+    teamId as string,
+  );
+  useScrollHandler({ scrollContainerRef, setFilesToShow });
 
-  const filteredFolders = useMemo(() => {
+  const filteredFolders = useMemo<OwnedFolder[]>(() => {
     return currentTeam
       ? currentTeam.ownedFolders.filter((folder) =>
           folder.name.toLowerCase().includes(filterValue.toLowerCase()),
@@ -62,7 +68,7 @@ function Team() {
       : [];
   }, [currentTeam, filterValue]);
 
-  const filteredFiles = useMemo(() => {
+  const filteredFiles = useMemo<OwnedFiles[]>(() => {
     return currentTeam
       ? currentTeam.ownedFiles.filter((file) =>
           file.name.toLowerCase().includes(filterValue.toLowerCase()),
@@ -71,7 +77,11 @@ function Team() {
   }, [currentTeam, filterValue]);
 
   const handleFolderClick = useCallback(
-    (folderId, folderVisibleTo) => {
+    (folderId: string, folderVisibleTo: string) => {
+      if (!currentTeam) {
+        return;
+      }
+
       if (
         folderVisibleTo !== "수습" &&
         currentUserRole !== "팀장" &&
@@ -93,12 +103,12 @@ function Team() {
     [currentUserRole, navigate, currentTeam],
   );
 
-  const handleFileClick = useCallback((fileId) => {
-    setSelectedFile(fileId);
+  const handleFileClick = useCallback((file: OwnedFiles) => {
+    setSelectedFile(file);
   }, []);
 
   const handleViewDetails = useCallback(
-    (file) => {
+    (file: OwnedFiles) => {
       if (
         file.visibleTo !== "수습" &&
         currentUserRole !== "팀장" &&
@@ -125,28 +135,56 @@ function Team() {
     setLeaveTeamModalOpen(true);
   }, []);
 
-  const handlePermissionClick = useCallback((event, elementId, type) => {
-    setSelectedElementId(elementId);
-    setSelectedType(type);
-    setPermissionModalOpen(true);
-    setClickPosition({ x: event.clientX, y: event.clientY });
-  }, []);
+  const handlePermissionClick = useCallback(
+    (
+      event: React.MouseEvent<HTMLButtonElement | HTMLLIElement>,
+      elementId: string,
+      type: string,
+    ) => {
+      setSelectedElementId(elementId);
+      setSelectedType(type);
+      setPermissionModalOpen(true);
+      setClickPosition({ x: event.clientX, y: event.clientY });
+    },
+    [],
+  );
 
   const handleTeamMemberClick = useCallback(() => {
     setManageTeamMemberModalOpen(true);
   }, []);
 
-  const handleFileDragStart = useCallback((event, fileId) => {
-    event.dataTransfer.setData("fileId", fileId);
-  }, []);
+  const handleFileDragStart = useCallback(
+    (
+      event: React.DragEvent<HTMLDivElement | HTMLButtonElement>,
+      fileId: string,
+    ) => {
+      event.dataTransfer.setData("fileId", fileId);
+    },
+    [],
+  );
 
-  const handleFolderDragStart = useCallback((event, folderId) => {
-    event.dataTransfer.setData("folderId", folderId);
-  }, []);
+  const handleFolderDragStart = useCallback(
+    (
+      event: React.DragEvent<
+        HTMLDivElement | HTMLButtonElement | HTMLLIElement
+      >,
+      folderId: string,
+    ) => {
+      event.dataTransfer.setData("folderId", folderId);
+    },
+    [],
+  );
 
   const handleFolderDrop = useCallback(
-    async (event, folderId) => {
+    async (
+      event: React.DragEvent<HTMLButtonElement | HTMLDivElement>,
+      folderId: string,
+    ) => {
       event.preventDefault();
+
+      if (!userData) {
+        return;
+      }
 
       const fileId = event.dataTransfer.getData("fileId");
 
@@ -157,30 +195,37 @@ function Team() {
         currentUserRole,
       });
     },
-    [currentUserRole, moveFileToFolderMutation, userData._id],
+    [currentUserRole, moveFileToFolderMutation, userData],
   );
 
   const handleClickTrashBin = () => {
+    if (!currentTeam) {
+      return;
+    }
+
     navigate(`/team/${encodeURIComponent(currentTeam._id)}/trash`);
   };
 
-  const handleTrashDragOver = useCallback((event) => {
-    event.preventDefault();
-  }, []);
+  const handleTrashDragOver = useCallback(
+    (event: React.DragEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+    },
+    [],
+  );
 
-  const handleTrashDrop = (event) => {
+  const handleTrashDrop = (event: React.DragEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     const fileId = event.dataTransfer.getData("fileId");
     const folderId = event.dataTransfer.getData("folderId");
 
-    if (fileId) {
+    if (fileId && userData) {
       moveFileToTrashMutation.mutate({
         fileId,
         userId: userData._id,
         currentUserRole,
       });
-    } else if (folderId) {
+    } else if (folderId && userData) {
       moveFolderToTrashMutation.mutate({
         folderId,
         userId: userData._id,
@@ -189,12 +234,8 @@ function Team() {
     }
   };
 
-  if (!currentTeam) {
-    return (
-      <div className="relative flex items-center justify-center h-screen w-full">
-        <p>Team not found</p>
-      </div>
-    );
+  if (!userData || !teamId || !currentTeam) {
+    return <LoadingMessage message="유저 정보를 불러오는 중입니다" />;
   }
 
   return (
@@ -263,12 +304,11 @@ function Team() {
           userData={userData}
         />
       )}
-      {isFileDetailOpen && (
+      {isFileDetailOpen && selectedFile && (
         <FileDetail
           setFileDetailOpen={setFileDetailOpen}
           file={selectedFile}
           currentUserRole={currentUserRole}
-          teamId={teamId}
           queryClient={queryClient}
           userData={userData}
         />

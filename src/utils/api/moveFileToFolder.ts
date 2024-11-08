@@ -1,9 +1,21 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, QueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-export const useMoveFileToFolder = (queryClient) => {
+interface UseMoveFileToFolderMutationProps {
+  fileId: string;
+  folderId: string;
+  userId: string;
+  currentUserRole: string;
+}
+
+export const useMoveFileToFolder = (queryClient: QueryClient) => {
   return useMutation({
-    mutationFn: async ({ fileId, folderId, userId, currentUserRole }) => {
+    mutationFn: async ({
+      fileId,
+      folderId,
+      userId,
+      currentUserRole,
+    }: UseMoveFileToFolderMutationProps) => {
       await axios.patch(
         `${
           import.meta.env.VITE_SERVER_URL
