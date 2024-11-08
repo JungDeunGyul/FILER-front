@@ -1,4 +1,4 @@
-export const getFileIconUrl = (fileType) => {
+export const getFileIconUrl = (fileType: string) => {
   if (
     fileType ===
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

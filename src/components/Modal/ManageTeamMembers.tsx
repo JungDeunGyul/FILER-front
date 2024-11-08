@@ -1,6 +1,22 @@
-import React, { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
+import { QueryClient } from "@tanstack/react-query";
+import { useUpdateTeamMembers } from "@api/updateTeamMembers";
 
-import { useUpdateTeamMembers } from "../../utils/api/updateTeamMembers";
+import type { User, Teams } from "userRelatedTypes";
+
+interface ManageTeamMembersProps {
+  setManageTeamMemberModalOpen: Dispatch<SetStateAction<boolean>>;
+  currentTeam: Teams;
+  currentUserRole: string;
+  queryClient: QueryClient;
+  userData: User;
+}
+
+interface Member {
+  _id: string;
+  user: User;
+  role: string;
+}
 
 export function ManageTeamMembers({
   setManageTeamMemberModalOpen,
@@ -8,20 +24,27 @@ export function ManageTeamMembers({
   currentUserRole,
   queryClient,
   userData,
-}) {
+}: ManageTeamMembersProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
-  const createFolderMutation = useUpdateTeamMembers(
+  const createFolderMutation = useUpdateTeamMembers({
     queryClient,
     setErrorMessage,
     setSuccessMessage,
     setManageTeamMemberModalOpen,
-  );
+  });
 
-  const handlePermissionSettingButton = (event, selectedRole) => {
+  const handlePermissionSettingButton = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    selectedRole: string,
+  ) => {
     event.preventDefault();
+
+    if (!selectedMember) {
+      return;
+    }
 
     if (currentUserRole !== "팀장") {
       setErrorMessage("팀장 이외에는 권한 설정 권한이 없습니다.");

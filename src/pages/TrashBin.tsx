@@ -1,20 +1,45 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { LeaveTeam } from "../components/modal/LeaveTeam";
-import { DeleteRestoreFileFolder } from "../components/modal/DeleteRestoreFileFolder";
-import { ManageTeamMembers } from "../components/modal/ManageTeamMembers";
+import { LeaveTeam } from "@modal/LeaveTeam";
+import { DeleteRestoreFileFolder } from "@modal/DeleteRestoreFileFolder";
+import { ManageTeamMembers } from "@modal/ManageTeamMembers";
 
-import { getFileIconUrl } from "../utils/fileIconURL";
-import { fetchTrashBinData } from "../utils/api/fetchTrashBinData";
+import { useCurrentTeam } from "@utils/hook/useCurrentTeam";
+import { getFileIconUrl } from "@utils/fileIconURL";
+import { fetchTrashBinData } from "@api/fetchTrashBinData";
+
+import type { User, OwnedFolder, OwnedFiles } from "userRelatedTypes";
+
+import LoadingMessage from "@components/LoadingMessage";
+
+interface TrashBinType {
+  _id: string;
+  ownerTeam: string;
+  files: Files[];
+  folders: Folders[];
+}
+
+interface Folders {
+  _id: string;
+  deleted_at: Date;
+  item: OwnedFolder;
+  itemType: string;
+}
+
+interface Files {
+  _id: string;
+  deleted_at: Date;
+  item: OwnedFiles;
+  itemType: string;
+}
 
 function TrashBin() {
   const navigate = useNavigate();
   const { teamId } = useParams();
   const queryClient = useQueryClient();
-  const userData = queryClient.getQueryData(["userData"]);
-  const userId = userData._id;
+  const userData = queryClient.getQueryData<User>(["userData"]);
 
   const [isLeaveTeamModalOpen, setLeaveTeamModalOpen] = useState(false);
   const [
@@ -26,48 +51,40 @@ function TrashBin() {
 
   const [selectedElementId, setSelectedElementId] = useState("");
   const [selectedType, setSelectedType] = useState("");
-  const [currentUserRole, setUserRole] = useState("");
   const [filterValue, setFilterValue] = useState("");
-  const [currentTeam, setCurrentTeam] = useState(null);
 
-  const { data: trashBin } = useQuery({
+  const { currentTeam, currentUserRole } = useCurrentTeam(
+    userData as User,
+    teamId as string,
+  );
+
+  const { data: trashBin } = useQuery<TrashBinType>({
     queryKey: ["trashBin"],
-    queryFn: () => fetchTrashBinData(teamId),
+    queryFn: () => fetchTrashBinData(teamId as string),
     enabled: !!currentTeam,
   });
 
-  useEffect(() => {
-    const team = userData.teams.find((team) => team._id === teamId);
-
-    if (team !== currentTeam) {
-      setCurrentTeam(team);
-    }
-
-    if (team && team.members) {
-      const currentUser = team.members.find(
-        (user) => user.user.nickname === userData.nickname,
-      );
-
-      const currentUserRole = currentUser ? currentUser.role : "";
-      setUserRole(currentUserRole);
-    }
-  }, [userData.teams, teamId, currentTeam]);
-
-  const filteredFolders =
-    trashBin && trashBin.folders
+  const filteredFolders = useMemo<Folders[]>(() => {
+    return trashBin
       ? trashBin.folders.filter((folder) =>
           folder.item.name.toLowerCase().includes(filterValue.toLowerCase()),
         )
       : [];
+  }, [filterValue, trashBin]);
 
-  const filteredFiles =
-    trashBin && trashBin.files
+  const filteredFiles = useMemo<Files[]>(() => {
+    return trashBin
       ? trashBin.files.filter((file) =>
           file.item.name.toLowerCase().includes(filterValue.toLowerCase()),
         )
       : [];
+  }, [filterValue, trashBin]);
 
-  const handleFolderClick = (folderId) => {
+  const handleFolderClick = (folderId: string) => {
+    if (!currentTeam) {
+      return;
+    }
+
     navigate(
       `/team/${encodeURIComponent(currentTeam._id)}/folder/${encodeURIComponent(
         folderId,
@@ -79,7 +96,7 @@ function TrashBin() {
     setLeaveTeamModalOpen(true);
   };
 
-  const handleDeleteRestoreModalClick = (elementId, type) => {
+  const handleDeleteRestoreModalClick = (elementId: string, type: string) => {
     setSelectedElementId(elementId);
     setSelectedType(type);
     setDeleteRestoreFileFolderModalOpen(true);
@@ -89,20 +106,18 @@ function TrashBin() {
     setManageTeamMemberModalOpen(true);
   };
 
-  if (!currentTeam) {
-    return (
-      <div className="relative flex items-center justify-center w-full h-screen">
-        <p>Team not found</p>
-      </div>
-    );
+  if (!userData || !teamId || !currentTeam) {
+    return <LoadingMessage message="유저 정보를 불러오는 중입니다" />;
   }
+
+  const userId = userData._id;
 
   return (
     <div className="flex flex-col md:flex-row h-screen overflow-hidden">
       <div className="md:w-1/6 bg-gray-100 p-4 overflow-auto">
         <div className="flex justify-between items-center mb-4">
           <div
-            onClick={() => handleLeaveTeamClick(true)}
+            onClick={() => handleLeaveTeamClick()}
             className="text-xl font-bold cursor-pointer"
           >
             {currentTeam.name}
@@ -227,6 +242,8 @@ function TrashBin() {
           setManageTeamMemberModalOpen={setManageTeamMemberModalOpen}
           currentTeam={currentTeam}
           currentUserRole={currentUserRole}
+          queryClient={queryClient}
+          userData={userData}
         />
       )}
     </div>

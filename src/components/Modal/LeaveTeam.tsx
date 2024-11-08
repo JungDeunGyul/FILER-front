@@ -1,20 +1,35 @@
-import { useNavigate } from "react-router-dom";
+import { Dispatch, SetStateAction } from "react";
 
-import { useLeaveTeam } from "../../utils/api/leaveTeam";
+import { useNavigate } from "react-router-dom";
+import { QueryClient } from "@tanstack/react-query";
+import { useLeaveTeam } from "@api/leaveTeam";
+
+import { User, Teams } from "userRelatedTypes";
+
+interface LeaveTeamProps {
+  setLeaveTeamModalOpen: Dispatch<SetStateAction<boolean>>;
+  currentTeam: Teams;
+  queryClient: QueryClient;
+  userData: User;
+}
 
 export function LeaveTeam({
   setLeaveTeamModalOpen,
   currentTeam,
   queryClient,
   userData,
-}) {
+}: LeaveTeamProps) {
   const navigate = useNavigate();
 
-  const leaveTeamMutation = useLeaveTeam(queryClient, navigate);
+  const leaveTeamMutation = useLeaveTeam({ queryClient, navigate });
 
   const currentUser = currentTeam.members.find(
     (user) => user.user.nickname === userData.nickname,
   );
+
+  if (!currentUser) {
+    return;
+  }
 
   const currentUserRole = currentUser.role;
   const teamName = currentTeam.name;

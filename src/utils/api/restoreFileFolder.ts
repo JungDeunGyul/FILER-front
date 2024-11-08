@@ -1,12 +1,28 @@
-import { useMutation } from "@tanstack/react-query";
+import { Dispatch, SetStateAction } from "react";
+import { useMutation, QueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-export const useRestoreFileFolder = (
+interface UseRestoreFileFolderProps {
+  queryClient: QueryClient;
+  setDeleteRestoreFileFolderModalOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+interface UseRestoreFileFolderParams {
+  url: string;
+  currentUserRole: string;
+  userId: string;
+}
+
+export const useRestoreFileFolder = ({
   queryClient,
   setDeleteRestoreFileFolderModalOpen,
-) => {
+}: UseRestoreFileFolderProps) => {
   return useMutation({
-    mutationFn: async ({ url, currentUserRole, userId }) => {
+    mutationFn: async ({
+      url,
+      currentUserRole,
+      userId,
+    }: UseRestoreFileFolderParams) => {
       await axios.patch(`${import.meta.env.VITE_SERVER_URL}${url}`, {
         currentUserRole,
         userId,

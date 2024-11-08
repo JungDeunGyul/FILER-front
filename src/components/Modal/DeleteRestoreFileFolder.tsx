@@ -1,6 +1,15 @@
+import { Dispatch, SetStateAction } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useDeleteFileFolder } from "../../utils/api/deleteFileFolder";
-import { useRestoreFileFolder } from "../../utils/api/restoreFileFolder";
+import { useDeleteFileFolder } from "@api/deleteFileFolder";
+import { useRestoreFileFolder } from "@api/restoreFileFolder";
+
+interface DeleteRestoreFileFolderProps {
+  setDeleteRestoreFileFolderModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedElementId: string;
+  selectedType: string;
+  currentUserRole: string;
+  userId: string;
+}
 
 export function DeleteRestoreFileFolder({
   setDeleteRestoreFileFolderModalOpen,
@@ -8,16 +17,16 @@ export function DeleteRestoreFileFolder({
   selectedType,
   currentUserRole,
   userId,
-}) {
+}: DeleteRestoreFileFolderProps) {
   const queryClient = useQueryClient();
-  const deleteFilerFolderMutation = useDeleteFileFolder(
+  const deleteFilerFolderMutation = useDeleteFileFolder({
     queryClient,
     setDeleteRestoreFileFolderModalOpen,
-  );
-  const restoreFileFolderMutation = useRestoreFileFolder(
+  });
+  const restoreFileFolderMutation = useRestoreFileFolder({
     queryClient,
     setDeleteRestoreFileFolderModalOpen,
-  );
+  });
 
   const handleDeleteButton = () => {
     const url =
