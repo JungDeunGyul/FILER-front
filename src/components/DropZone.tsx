@@ -1,22 +1,31 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useQueryClient } from "@tanstack/react-query";
-import { useUploadFile } from "../utils/api/uploadFile";
+import { useUploadFile } from "@api/uploadFile";
 
-const DropZone = ({ teamId, userId, folderId, fileId }) => {
-  const [files, setFiles] = useState([]);
+import type { File } from "fileTypes";
+
+interface DropZoneParams {
+  teamId?: string;
+  userId: string;
+  folderId?: string;
+  fileId?: string;
+}
+
+const DropZone = ({ teamId, userId, folderId, fileId }: DropZoneParams) => {
+  const [file, setFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
   const queryClient = useQueryClient();
-  const uploadFileMutation = useUploadFile(
+  const uploadFileMutation = useUploadFile({
     queryClient,
-    setFiles,
+    setFile,
     setUploading,
     setUploadSuccess,
     setErrorMessage,
-  );
+  });
 
   const MAX_FILE_SIZE_MB = 30;
   const allowedFileTypes = {
@@ -39,34 +48,34 @@ const DropZone = ({ teamId, userId, folderId, fileId }) => {
     mp4: "video/mp4",
   };
 
-  const onDrop = useCallback((acceptedFiles) => {
-    const filteredFiles = acceptedFiles.filter((file) => {
-      const fileSizeMB = file.size / (1024 * 1024);
-      if (fileSizeMB > MAX_FILE_SIZE_MB) {
-        setErrorMessage(
-          `파일 크기가 ${MAX_FILE_SIZE_MB}MB를 초과합니다: ${file.name}`,
-        );
-        return false;
-      }
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setErrorMessage("");
+    const acceptedFile = acceptedFiles[0];
+    const fileSizeMB = acceptedFile.size / (1024 * 1024);
 
-      const fileType = file.name.split(".").pop().toLowerCase();
-      const fileMimeType = allowedFileTypes[fileType];
+    if (fileSizeMB > MAX_FILE_SIZE_MB) {
+      setErrorMessage(
+        `파일 크기가 ${MAX_FILE_SIZE_MB}MB를 초과합니다: ${acceptedFile.name}`,
+      );
+      return;
+    }
 
-      if (fileMimeType !== undefined && file.type === fileMimeType) {
-        return true;
-      } else {
-        setErrorMessage(`${fileType}은 허용되지 않은 파일 형식입니다.`);
-        return false;
-      }
-    });
+    const fileType = acceptedFile.name.split(".").pop()?.toLowerCase();
 
-    setFiles(filteredFiles);
+    const fileMimeType =
+      allowedFileTypes[fileType as keyof typeof allowedFileTypes];
+
+    if (fileMimeType) {
+      setFile(acceptedFile);
+    } else {
+      setErrorMessage(`${fileType}은 허용되지 않은 파일 형식입니다.`);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const handleUpload = async () => {
-    if (uploading) {
+    if (uploading || !file) {
       return;
     }
 
@@ -74,7 +83,7 @@ const DropZone = ({ teamId, userId, folderId, fileId }) => {
     setUploadSuccess(false);
 
     uploadFileMutation.mutate({
-      files,
+      file,
       teamId,
       userId,
       folderId,
@@ -83,7 +92,7 @@ const DropZone = ({ teamId, userId, folderId, fileId }) => {
   };
 
   const handleCloseUpload = () => {
-    setFiles([]);
+    setFile(null);
     setErrorMessage("");
     setUploading(false);
     setUploadSuccess(false);
@@ -109,16 +118,10 @@ const DropZone = ({ teamId, userId, folderId, fileId }) => {
           파일이 성공적으로 업로드 되었습니다.
         </p>
       )}
-      {files.length > 0 && (
+      {file && (
         <div className="mt-2">
-          <ul>
-            {files.map((file, index) => (
-              <li key={index} className="mb-2">
-                <h4>현재 파일:</h4>
-                <span>{file.name}</span>
-              </li>
-            ))}
-          </ul>
+          <h4>현재 파일:</h4>
+          <span>{file.name}</span>
           <div className="mt-2">
             <button
               onClick={handleUpload}

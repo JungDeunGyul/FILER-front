@@ -1,24 +1,52 @@
-import { useMutation } from "@tanstack/react-query";
+import { Dispatch, SetStateAction } from "react";
+import { useMutation, QueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-export const useUploadFile = (
+import type { File } from "fileTypes";
+
+interface UseUploadFileProps {
+  queryClient: QueryClient;
+  setFile: Dispatch<SetStateAction<File | null>>;
+  setUploading: Dispatch<SetStateAction<boolean>>;
+  setUploadSuccess: Dispatch<SetStateAction<boolean>>;
+  setErrorMessage: Dispatch<SetStateAction<string>>;
+}
+
+interface UploadFileMutationParams {
+  file: File;
+  teamId?: string;
+  userId: string;
+  folderId?: string;
+  fileId?: string;
+}
+
+interface UploadFileResponse {
+  fileId?: string;
+  folderId?: string;
+}
+
+export const useUploadFile = ({
   queryClient,
-  setFiles,
+  setFile,
   setUploading,
   setUploadSuccess,
   setErrorMessage,
-) => {
-  return useMutation({
-    mutationFn: async ({ files, teamId, userId, folderId, fileId }) => {
-      if (!files || files.length === 0) {
+}: UseUploadFileProps) => {
+  return useMutation<UploadFileResponse, Error, UploadFileMutationParams>({
+    mutationFn: async ({
+      file,
+      teamId,
+      userId,
+      folderId,
+      fileId,
+    }: UploadFileMutationParams) => {
+      if (!file) {
         throw new Error("업로드할 파일이 없습니다.");
       }
 
       const formData = new FormData();
 
-      files.forEach((file) => {
-        formData.append("file", file, encodeURIComponent(file.name));
-      });
+      formData.append("file", file, encodeURIComponent(file.name));
 
       const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -51,7 +79,7 @@ export const useUploadFile = (
       return { fileId, folderId };
     },
     onSuccess: async () => {
-      setFiles([]);
+      setFile(null);
       setUploadSuccess(true);
 
       setTimeout(() => {
@@ -61,22 +89,24 @@ export const useUploadFile = (
     onError: async () => {
       setErrorMessage("파일 업로드 중 오류가 발생했습니다.");
 
-      await new Promise((resolve) =>
+      await new Promise<void>((resolve) =>
         setTimeout(() => {
           setErrorMessage("");
           resolve();
         }, 2000),
       );
     },
-    onSettled: async (data) => {
-      const { folderId } = data;
+    onSettled: async (data: UploadFileResponse | undefined) => {
+      if (data) {
+        const { folderId } = data;
 
-      await queryClient.invalidateQueries({ queryKey: ["userData"] });
+        await queryClient.invalidateQueries({ queryKey: ["userData"] });
 
-      if (folderId) {
-        await queryClient.invalidateQueries({
-          queryKey: ["folderData", folderId],
-        });
+        if (folderId) {
+          await queryClient.invalidateQueries({
+            queryKey: ["folderData", folderId],
+          });
+        }
       }
 
       setUploading(false);
