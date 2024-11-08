@@ -1,12 +1,27 @@
+import type { OwnedFolder } from "userRelatedTypes";
+
+interface FolderGridProps {
+  filteredFolders: OwnedFolder[];
+  handleFolderDragStart: (
+    event: React.DragEvent<HTMLDivElement>,
+    folderId: string,
+  ) => void;
+  handleFolderClick: (folderId: string, visibleTo: string) => void;
+  handleFolderDrop: (
+    event: React.DragEvent<HTMLDivElement>,
+    folderId: string,
+  ) => void;
+}
+
 const FolderGrid = ({
   filteredFolders,
   handleFolderDragStart,
   handleFolderClick,
   handleFolderDrop,
-}) => {
+}: FolderGridProps) => {
   return (
     <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      {filteredFolders.map((folder) => (
+      {filteredFolders.map((folder: OwnedFolder) => (
         <div
           role="folder"
           key={folder._id}

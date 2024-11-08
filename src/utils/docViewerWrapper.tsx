@@ -1,7 +1,13 @@
 import { useMemo } from "react";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 
-export const DocViewerWrapper = ({ file }) => {
+import type { OwnedFiles } from "userRelatedTypes";
+
+interface DocViewerWrapperProps {
+  file: OwnedFiles;
+}
+
+export const DocViewerWrapper = ({ file }: DocViewerWrapperProps) => {
   const docViewerProps = useMemo(
     () => ({
       documents: [
