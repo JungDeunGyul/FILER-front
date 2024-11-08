@@ -1,5 +1,16 @@
-import React, { useState, useRef } from "react";
-import { useCreateFolder } from "../../utils/api/createFolder";
+import { useState, useRef, Dispatch, SetStateAction } from "react";
+import { QueryClient } from "@tanstack/react-query";
+
+import { useCreateFolder } from "@api/createFolder";
+import { User } from "userRelatedTypes";
+
+interface CreateFolderProps {
+  setCreateFolderModalOpen: Dispatch<SetStateAction<boolean>>;
+  teamName: string;
+  queryClient: QueryClient;
+  userData: User;
+  folderId?: string;
+}
 
 export function CreateFolder({
   setCreateFolderModalOpen,
@@ -7,20 +18,20 @@ export function CreateFolder({
   queryClient,
   userData,
   folderId,
-}) {
+}: CreateFolderProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const createFolderMutation = useCreateFolder(
+  const createFolderMutation = useCreateFolder({
     queryClient,
     setSuccessMessage,
     setErrorMessage,
     setLoading,
     setCreateFolderModalOpen,
     folderId,
-  );
+  });
 
-  const createInputRef = useRef(null);
+  const createInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleCloseModals = () => {
     setCreateFolderModalOpen(false);
@@ -32,12 +43,12 @@ export function CreateFolder({
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
 
     const userId = userData._id;
-    const folderName = createInputRef.current.value;
+    const folderName = createInputRef.current?.value ?? "";
 
     if (
       folderName.length < 3 ||
