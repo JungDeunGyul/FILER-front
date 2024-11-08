@@ -1,11 +1,18 @@
 import axios from "axios";
 
-export const handleDownloadFile = async (
+interface handleDownloadFileParams {
+  teamId: string;
+  fileId: string;
+  fileName: string;
+  currentUserRole: string;
+}
+
+export const handleDownloadFile = async ({
   teamId,
   fileId,
   fileName,
   currentUserRole,
-) => {
+}: handleDownloadFileParams) => {
   try {
     const response = await axios.get(
       `${

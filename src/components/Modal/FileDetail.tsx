@@ -1,27 +1,51 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from "react";
+import { QueryClient } from "@tanstack/react-query";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
-import DropZone from "../DropZone";
 
-import { handleDownloadFile } from "../../utils/downloadFile";
-import { useSubmitComment } from "../../utils/api/submitComment";
+import DropZone from "@components/DropZone";
+
+import { handleDownloadFile } from "@utils/downloadFile";
+import { useSubmitComment } from "@utils/api/submitComment";
+
+import type { User, OwnedFiles } from "userRelatedTypes";
+
+interface selectedFileType {
+  _id: string;
+  file: OwnedFiles;
+  versionNumber: number;
+}
+
+interface FileDetailProps {
+  setFileDetailOpen: Dispatch<SetStateAction<boolean>>;
+  file: OwnedFiles;
+  currentUserRole: string;
+  queryClient: QueryClient;
+  userData: User;
+}
 
 export function FileDetail({
   setFileDetailOpen,
   file,
   currentUserRole,
-  teamId,
   queryClient,
   userData,
-}) {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const [changedFields, setChangedFields] = useState([]);
-  const commentRef = useRef("");
-  const submitCommentMutation = useSubmitComment(
-    queryClient,
-    setSelectedFile,
-    commentRef,
+}: FileDetailProps) {
+  const [selectedFile, setSelectedFile] = useState<selectedFileType | null>(
+    null,
   );
+  const [selectedDocument, setSelectedDocument] = useState<JSX.Element | null>(
+    null,
+  );
+  const [changedFields, setChangedFields] = useState<string[]>([]);
+  const commentRef = useRef<HTMLTextAreaElement | null>(null);
+  const submitCommentMutation = useSubmitComment(queryClient);
 
   const handleModalClick = () => {
     setFileDetailOpen(false);
@@ -57,28 +81,35 @@ export function FileDetail({
     }
   }, [selectedFile]);
 
-  const handleFileClick = (file) => {
-    setSelectedFile(file);
-    setChangedFields(findChangedFields(selectedFile, file));
-    commentRef.current = "";
+  const handleFileClick = (version: selectedFileType) => {
+    setSelectedFile(version);
+
+    if (selectedFile) {
+      setChangedFields(findChangedFields(selectedFile, version));
+    }
   };
 
-  const handleCommentChange = (event) => {
-    commentRef.current = event.target.value;
+  const handleCommentChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    if (commentRef.current) {
+      commentRef.current.value = event.target.value;
+    }
   };
 
-  const handleCommentSubmit = (fileId) => {
-    const comment = commentRef.current;
-    const userId = userData._id;
+  const handleCommentSubmit = (fileId: string) => {
+    if (commentRef.current) {
+      const comment = commentRef.current.value;
+      const userId = userData._id;
 
-    submitCommentMutation.mutate({
-      fileId,
-      userId,
-      comment,
-      teamId,
-    });
+      submitCommentMutation.mutate({
+        fileId,
+        userId,
+        comment,
+      });
+    }
 
-    commentRef.current = "";
+    commentRef.current = null;
   };
 
   const MemoizedFirstDocViewer = useMemo(() => {
@@ -127,8 +158,9 @@ export function FileDetail({
     );
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
+
     return new Intl.DateTimeFormat("ko-KR", {
       year: "numeric",
       month: "2-digit",
@@ -139,7 +171,10 @@ export function FileDetail({
     }).format(date);
   };
 
-  const findChangedFields = (prevFile, currentFile) => {
+  const findChangedFields = (
+    prevFile: selectedFileType,
+    currentFile: selectedFileType,
+  ) => {
     const changedFields = [];
 
     if (prevFile && prevFile !== currentFile) {
@@ -195,12 +230,12 @@ export function FileDetail({
                         <p
                           className="text-blue-500 font-bold"
                           onClick={() =>
-                            handleDownloadFile(
-                              version.file.ownerTeam,
-                              version.file._id,
-                              version.file.name,
+                            handleDownloadFile({
+                              teamId: version.file.ownerTeam,
+                              fileId: version.file._id,
+                              fileName: version.file.name,
                               currentUserRole,
-                            )
+                            })
                           }
                         >
                           다운로드
@@ -220,7 +255,7 @@ export function FileDetail({
                       selectedFile.file._id === version.file._id &&
                       changedFields.map((field) => (
                         <p key={field} className="text-green-500 text-sm">
-                          {field} {version.file[field.toLowerCase()]}
+                          {field}
                         </p>
                       ))}
                     {selectedFile &&
