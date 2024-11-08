@@ -1,3 +1,27 @@
+import type { Teams, OwnedFolder } from "userRelatedTypes";
+
+interface SidebarProps {
+  currentTeam: Teams;
+  filteredFolders: OwnedFolder[];
+  handleLeaveTeamClick: () => void;
+  handleTeamMemberClick: () => void;
+  handlePermissionClick: (
+    event: React.MouseEvent<HTMLLIElement>,
+    elementId: string,
+    type: string,
+  ) => void;
+  handleFolderDragStart: (
+    event: React.DragEvent<HTMLLIElement>,
+    folderId: string,
+  ) => void;
+  handleClickTrashBin: () => void;
+  handleTrashDragOver: (event: React.DragEvent<HTMLButtonElement>) => void;
+  handleTrashDrop: (event: React.DragEvent<HTMLButtonElement>) => void;
+  handleFileDragStart: (
+    event: React.DragEvent<HTMLButtonElement>,
+    fileId: string,
+  ) => void;
+}
 const Sidebar = ({
   currentTeam,
   filteredFolders,
@@ -9,7 +33,7 @@ const Sidebar = ({
   handleTrashDragOver,
   handleTrashDrop,
   handleFileDragStart,
-}) => {
+}: SidebarProps) => {
   return (
     <div
       className="bg-gray-100 p-4 overflow-auto flex-shrink-0"
@@ -17,7 +41,7 @@ const Sidebar = ({
     >
       <div className="flex justify-between items-center mb-4">
         <div
-          onClick={() => handleLeaveTeamClick(true)}
+          onClick={handleLeaveTeamClick}
           className="text-xl font-bold cursor-pointer"
         >
           {currentTeam.name}
