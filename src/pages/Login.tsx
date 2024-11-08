@@ -1,23 +1,27 @@
-import React from "react";
+import { Dispatch, SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../utils/firebase";
-import { useLoginUser } from "../utils/api/auth";
+import { auth, provider } from "@utils/firebase";
+import { useLoginUser } from "@api/auth";
 
-import ImagePlaceholder from "../components/ImagePlaceholder";
+import ImagePlaceholder from "@components/ImagePlaceholder";
 
-function Login({ setUserId }) {
+interface LoginProps {
+  setUserId: Dispatch<SetStateAction<string | null>>;
+}
+
+function Login({ setUserId }: LoginProps) {
   const navigate = useNavigate();
-  const loginUserMutation = useLoginUser(navigate, setUserId);
+  const loginUserMutation = useLoginUser({ navigate, setUserId });
 
   const handleLogin = async () => {
     const result = await signInWithPopup(auth, provider);
     const token = await result.user.getIdToken();
 
     loginUserMutation.mutate({
-      email: result.user.email,
-      nickname: result.user.displayName,
-      photoURL: result.user.photoURL,
+      email: result.user.email!,
+      nickname: result.user.displayName!,
+      photoURL: result.user.photoURL!,
       token,
     });
   };

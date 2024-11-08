@@ -1,6 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-function ImagePlaceholder({ src, alt }) {
+interface ImagePlaceholderProps {
+  src: string;
+  alt: string;
+}
+
+function ImagePlaceholder({ src, alt }: ImagePlaceholderProps) {
   const [loaded, setLoaded] = useState(false);
 
   return (

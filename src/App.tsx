@@ -7,24 +7,26 @@ import {
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Header from "./components/layout/Header";
-import Home from "./pages/Home";
-import ExploreTeam from "./pages/ExploreTeam";
-import MyTeam from "./pages/MyTeam";
-import Login from "./pages/Login";
-import Team from "./pages/Team";
-import Folder from "./pages/Folder";
-import TrashBin from "./pages/TrashBin";
-import { fetchUserData } from "./utils/api/fetchUserData";
+import Header from "@layout/Header";
+import Home from "@pages/Home";
+import ExploreTeam from "@pages/ExploreTeam";
+import MyTeam from "@pages/MyTeam";
+import Login from "@pages/Login";
+import Team from "@pages/Team";
+import Folder from "@pages/Folder";
+import TrashBin from "@pages/TrashBin";
+import { fetchUserData } from "@api/fetchUserData";
+
+import type { User } from "userRelatedTypes";
 
 function App() {
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { data: userData } = useQuery({
+  const { data: userData } = useQuery<User>({
     queryKey: ["userData"],
-    queryFn: () => fetchUserData(userId),
+    queryFn: () => fetchUserData(userId as string),
     enabled: !!userId,
     retry: false,
   });
@@ -40,7 +42,7 @@ function App() {
     if (userId) {
       sessionStorage.setItem("lastVisitedURL", location.pathname);
     }
-  }, [location]);
+  }, [location, userId]);
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem("userId");
