@@ -1,16 +1,34 @@
-import { useMutation } from "@tanstack/react-query";
+import { Dispatch, SetStateAction } from "react";
+import { useMutation, QueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-export const useManageTeamRequests = (
+interface UseManageTeamRequestsProps {
+  queryClient: QueryClient;
+  setErrorMessage: Dispatch<SetStateAction<string>>;
+  setSuccessMessage: Dispatch<SetStateAction<string>>;
+  setModalOpen: Dispatch<SetStateAction<boolean>>;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  navigate: (path: string) => void;
+}
+
+interface UseManageTeamRequestsMutatinParams {
+  url: string;
+  isCreateMode: boolean;
+}
+
+export const useManageTeamRequests = ({
   queryClient,
   setErrorMessage,
   setSuccessMessage,
   setModalOpen,
   setLoading,
   navigate,
-) => {
+}: UseManageTeamRequestsProps) => {
   return useMutation({
-    mutationFn: async ({ url, isCreateMode }) => {
+    mutationFn: async ({
+      url,
+      isCreateMode,
+    }: UseManageTeamRequestsMutatinParams) => {
       const response = await axios({
         method: isCreateMode ? "post" : "patch",
         url,
@@ -37,7 +55,7 @@ export const useManageTeamRequests = (
 
       setErrorMessage(errorMsg);
 
-      await new Promise((resolve) =>
+      await new Promise<void>((resolve) =>
         setTimeout(() => {
           setErrorMessage("");
           setLoading(false);
