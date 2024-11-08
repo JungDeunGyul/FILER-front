@@ -1,28 +1,37 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef, Dispatch, SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
+import { QueryClient } from "@tanstack/react-query";
 
-import { useManageTeamRequests } from "../../utils/api/manageTeamRequests";
+import { useManageTeamRequests } from "@api/manageTeamRequests";
+import type { User } from "userRelatedTypes";
+
+interface TeamFormModalProps {
+  setModalOpen: Dispatch<SetStateAction<boolean>>;
+  isCreateMode: boolean;
+  userData: User;
+  queryClient: QueryClient;
+}
 
 export function TeamFormModal({
   setModalOpen,
   isCreateMode,
   userData,
   queryClient,
-}) {
+}: TeamFormModalProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const teamInputRef = useRef(null);
+  const teamInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
 
-  const manageTeamReuestsMutation = useManageTeamRequests(
+  const manageTeamReuestsMutation = useManageTeamRequests({
     queryClient,
     setErrorMessage,
     setSuccessMessage,
     setModalOpen,
     setLoading,
     navigate,
-  );
+  });
 
   const handleCloseModals = () => {
     setModalOpen(false);
@@ -34,11 +43,11 @@ export function TeamFormModal({
     }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
 
-    const teamName = teamInputRef.current.value;
+    const teamName = teamInputRef.current?.value ?? "";
 
     if (
       teamName.length < 3 ||
@@ -96,8 +105,8 @@ export function TeamFormModal({
                 ? "생성 중..."
                 : "신청 중..."
               : isCreateMode
-              ? "생성하기"
-              : "신청하기"}
+                ? "생성하기"
+                : "신청하기"}
           </button>
           <button
             onClick={handleCloseModals}

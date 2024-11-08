@@ -1,17 +1,24 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { TeamFormModal } from "../components/modal/TeamFormModal";
+import { TeamFormModal } from "@modal/TeamFormModal";
+import LoadingMessage from "@components/LoadingMessage";
+
+import { User } from "userRelatedTypes";
 
 function ExploreTeam() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isCreateMode, setIsCreateMode] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const userData = queryClient.getQueryData(["userData"]);
+  const userData = queryClient.getQueryData<User>(["userData"]);
 
-  const handleOpenModal = (isCreateMode) => {
+  if (!userData) {
+    return <LoadingMessage message="유저 정보를 불러오는 중입니다" />;
+  }
+
+  const handleOpenModal = (isCreateMode: boolean) => {
     setIsCreateMode(isCreateMode);
     setModalOpen(true);
   };
