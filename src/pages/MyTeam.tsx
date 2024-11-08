@@ -1,19 +1,25 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { User } from "userRelatedTypes";
+import LoadingMessage from "@components/LoadingMessage";
 
 function MyTeam() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const userData = queryClient.getQueryData(["userData"]);
-  const [filterValue, setFilterValue] = useState("");
+  const userData = queryClient.getQueryData<User>(["userData"]);
+  const [filterValue, setFilterValue] = useState<string>("");
+
+  if (!userData) {
+    return <LoadingMessage message="유저 정보를 불러오는 중입니다" />;
+  }
 
   const filteredTeams =
     userData.teams.filter((team) =>
       team.name.toLowerCase().includes(filterValue.toLowerCase()),
     ) || [];
 
-  const handleTeamClick = (teamId) => {
+  const handleTeamClick = (teamId: string) => {
     navigate(`/team/${encodeURIComponent(teamId)}`);
   };
 
