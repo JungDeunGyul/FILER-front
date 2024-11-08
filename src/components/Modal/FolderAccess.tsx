@@ -1,6 +1,10 @@
-import React from "react";
+import { Dispatch, SetStateAction } from "react";
 
-export function FolderAccess({ setFolderAccessModalOpen }) {
+interface FolderAccessProps {
+  setFolderAccessModalOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+export function FolderAccess({ setFolderAccessModalOpen }: FolderAccessProps) {
   const handleModalClick = () => {
     setFolderAccessModalOpen(false);
   };

@@ -1,4 +1,12 @@
-const FolderAndTeamListButtons = ({ onNavigate, onCreateFolder }) => (
+interface FolderAndTeamListButtonsProps {
+  onNavigate: () => void;
+  onCreateFolder: () => void;
+}
+
+const FolderAndTeamListButtons = ({
+  onNavigate,
+  onCreateFolder,
+}: FolderAndTeamListButtonsProps) => (
   <div className="flex justify-between items-center mb-4">
     <button
       onClick={onNavigate}
