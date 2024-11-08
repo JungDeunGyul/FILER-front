@@ -1,6 +1,18 @@
-import React, { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
+import { QueryClient } from "@tanstack/react-query";
 
-import { useUpdateFileFolderPermission } from "../../utils/api/updateFileFolderPermission";
+import { useUpdateFileFolderPermission } from "@api/updateFileFolderPermission";
+import type { User } from "userRelatedTypes";
+
+interface PermissionSettingProps {
+  setPermissionModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedElementId: string;
+  selectedType: string;
+  currentUserRole: string;
+  clickPosition: { x: number; y: number };
+  queryClient: QueryClient;
+  userData: User;
+}
 
 export function PermissionSetting({
   setPermissionModalOpen,
@@ -10,18 +22,21 @@ export function PermissionSetting({
   clickPosition,
   queryClient,
   userData,
-}) {
+}: PermissionSettingProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const updateFileFolderPermissionMutation = useUpdateFileFolderPermission(
+  const updateFileFolderPermissionMutation = useUpdateFileFolderPermission({
     queryClient,
     setPermissionModalOpen,
     setSuccessMessage,
     setErrorMessage,
-  );
+  });
 
-  const handlePermissionSettingButton = (event, selectedRole) => {
+  const handlePermissionSettingButton = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    selectedRole: string,
+  ) => {
     event.preventDefault();
 
     if (currentUserRole !== "팀장") {
