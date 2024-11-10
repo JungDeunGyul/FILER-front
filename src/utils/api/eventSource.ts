@@ -12,7 +12,7 @@ export const useEventSource = ({
 }: UseEventSourceParams) => {
   useEffect(() => {
     const source = new EventSource(
-      `${import.meta.env.VITE_SERVER_URL}/team/filer-stream/${loginUserId}`,
+      `${import.meta.env.VITE_SERVER_URL}/filer-stream/${loginUserId}`,
     );
 
     source.onmessage = () => {
