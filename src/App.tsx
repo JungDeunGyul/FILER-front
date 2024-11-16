@@ -5,7 +5,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@layout/Header";
 import Home from "@pages/Home";
@@ -13,11 +13,13 @@ import ExploreTeam from "@pages/ExploreTeam";
 import MyTeam from "@pages/MyTeam";
 import Login from "@pages/Login";
 import Team from "@pages/Team";
-import Folder from "@pages/Folder";
-import TrashBin from "@pages/TrashBin";
+import LazyRoute from "@components/LazyRoute";
 import { fetchUserData } from "@api/fetchUserData";
 
 import type { User } from "userRelatedTypes";
+
+const Folder = lazy(() => import("@pages/Folder"));
+const TrashBin = lazy(() => import("@pages/TrashBin"));
 
 function App() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -92,11 +94,27 @@ function App() {
           />
           <Route
             path="/team/:teamId/folder/:folderId"
-            element={userData ? <Folder /> : <Navigate to="/" />}
+            element={
+              userData ? (
+                <LazyRoute loadingMessage="폴더 페이지 로딩 중...">
+                  <Folder />
+                </LazyRoute>
+              ) : (
+                <Navigate to="/" />
+              )
+            }
           />
           <Route
             path="/team/:teamId/trash"
-            element={userData ? <TrashBin /> : <Navigate to="/" />}
+            element={
+              userData ? (
+                <LazyRoute loadingMessage="휴지통 페이지 로딩 중...">
+                  <TrashBin />
+                </LazyRoute>
+              ) : (
+                <Navigate to="/" />
+              )
+            }
           />
         </Routes>
       </div>
